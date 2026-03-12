@@ -12,7 +12,7 @@ Error generating stack: `+e.message+`
           font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
           display: flex; justify-content: center; align-items: center;
           height: 100vh; overflow: hidden;
-          background: #1a2332 url('/Hero.png') center/cover no-repeat fixed;
+          background: #1a2332 url('/bilt-prototypes/ai-concierge/Hero.png') center/cover no-repeat fixed;
           -webkit-font-smoothing: antialiased;
         }
         .phone-frame {
@@ -36,7 +36,7 @@ Error generating stack: `+e.message+`
         .status-bar {
           height: 54px;
           flex-shrink: 0;
-          background: url('/status-bar.png') center/contain no-repeat;
+          background: url('/bilt-prototypes/ai-concierge/status-bar.png') center/contain no-repeat;
         }
         .home-indicator {
           display: flex;
