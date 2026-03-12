@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/griffin.wells/.claude/**)",
+      "Bash(find /Users/griffin.wells/.claude -name \"*.json\" -exec echo \"=== {} ===\" \\\\; -exec cat {} \\\\; 2>/dev/null | head -100)"
+    ]
+  }
+}

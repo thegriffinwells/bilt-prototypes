@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(claude mcp:*)",
+      "mcp__figma-remote-mcp__get_screenshot",
+      "mcp__figma-remote-mcp__get_design_context",
+      "mcp__figma-remote-mcp__get_code_connect_suggestions",
+      "mcp__figma-remote-mcp__send_code_connect_mappings",
+      "Bash(npm create:*)",
+      "Bash(cd /Users/griffin.wells/claude-projects/bilt-one/travel-checkout && npm install 2>&1)",
+      "Bash(npm run:*)",
+      "WebFetch(domain:www.bilt.com)",
+      "Bash(mkdir -p /Users/griffin.wells/bilt-travel-booking-archive && mv /Users/griffin.wells/b64part_* /Users/griffin.wells/bhalf_* /Users/griffin.wells/bilt_b64_chunk_* /Users/griffin.wells/bilt_b64.txt /Users/griffin.wells/bilt_chunk_* /Users/griffin.wells/bilt_full_low.jpg /Users/griffin.wells/bilt_half.b64 /Users/griffin.wells/bilt_half.jpg /Users/griffin.wells/bilt_half.png /Users/griffin.wells/bilt_overlay.jpg /Users/griffin.wells/bilt_ref_half.b64 /Users/griffin.wells/bilt_ref_half.png /Users/griffin.wells/bilt_ref_small.b64 /Users/griffin.wells/bilt_ref_small.jpg /Users/griffin.wells/bilt_ref_small.png /Users/griffin.wells/bilt_ref.b64 /Users/griffin.wells/bilt_ref.jpg /Users/griffin.wells/bilt_reference_final.png /Users/griffin.wells/bilt_reference.png /Users/griffin.wells/bilt_tiny.jpg /Users/griffin.wells/bilt_tiny.png /Users/griffin.wells/chunk_scripts.txt /Users/griffin.wells/cors_server.py /Users/griffin.wells/figma_bottom.png /Users/griffin.wells/figma_clean.png /Users/griffin.wells/figma_clip_check.png /Users/griffin.wells/figma_clip_fixed.png /Users/griffin.wells/figma_comp_fixed.png /Users/griffin.wells/figma_comp_overlay.png /Users/griffin.wells/figma_comp_zoom.png /Users/griffin.wells/figma_components.png /Users/griffin.wells/figma_diff.png /Users/griffin.wells/figma_final_components.png /Users/griffin.wells/figma_final.png /Users/griffin.wells/figma_overlay_check.png /Users/griffin.wells/figma_progress.png /Users/griffin.wells/figma_progress2.png /Users/griffin.wells/tab1_figma.png /Users/griffin.wells/tab2_bilt.png /Users/griffin.wells/bilt-travel-booking-archive/)",
+      "Bash(lsof -iTCP -sTCP:LISTEN -P -n)",
+      "Bash(lsof -iTCP:3000 -sTCP:LISTEN -P -n 2>/dev/null | head -5)",
+      "Bash(cd /Users/griffin.wells/claude-projects/bilt-prototype-hub && python3 -m http.server 9000)",
+      "Bash(lsof -iTCP:8080 -sTCP:LISTEN -P -n 2>/dev/null | head -3)",
+      "Bash(cd /Users/griffin.wells/claude-projects/partner-travel-flow-figma-mcp && python3 -m http.server 8080)",
+      "Bash(gh auth:*)",
+      "Bash(which git:*)",
+      "Bash(brew install:*)",
+      "Bash(ls -d /Users/griffin.wells/claude-projects/*/)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "figma-remote-mcp"
+  ]
+}

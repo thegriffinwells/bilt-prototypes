@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(yes | npm create vite@latest . -- --template react 2>&1)",
+      "Bash(npx --yes create-vite@latest temp-scaffold --template react 2>&1)",
+      "Bash(mv temp-scaffold/* temp-scaffold/.* . 2>/dev/null; rmdir temp-scaffold; npm install 2>&1 | tail -5)",
+      "Bash(cp /Users/griffin.wells/claude-projects/bilt-localhost-template/assets/Hero.png /Users/griffin.wells/claude-projects/colin-prototype/public/ && cp /Users/griffin.wells/claude-projects/bilt-localhost-template/assets/favicon.ico /Users/griffin.wells/claude-projects/colin-prototype/public/)",
+      "Bash(curl -s http://localhost:5174 | grep -o '<title>.*</title>')"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "figma-remote-mcp"
+  ]
+}

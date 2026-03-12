@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__plugin_figma-friend_chrome-devtools__list_pages",
+      "mcp__plugin_figma-friend_chrome-devtools__navigate_page",
+      "mcp__plugin_figma-friend_chrome-devtools__new_page",
+      "mcp__plugin_figma-friend_chrome-devtools__take_screenshot",
+      "mcp__plugin_figma-friend_chrome-devtools__evaluate_script",
+      "mcp__plugin_figma-friend_chrome-devtools__take_snapshot",
+      "mcp__plugin_figma-friend_chrome-devtools__click",
+      "mcp__plugin_figma-friend_chrome-devtools__press_key",
+      "Bash(curl -s http://localhost:8080/ | head -20)",
+      "Bash(curl -s http://localhost:3000/ | head -5)",
+      "Bash(cp /Users/griffin.wells/claude-projects/bilt-localhost-template/assets/Hero.png /Users/griffin.wells/claude-projects/joist-view/ && cp /Users/griffin.wells/claude-projects/bilt-localhost-template/assets/favicon.ico /Users/griffin.wells/claude-projects/joist-view/)"
+    ]
+  }
+}

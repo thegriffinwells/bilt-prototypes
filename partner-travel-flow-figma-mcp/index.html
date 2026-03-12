@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="favicon.ico">
+<title>Bilt — Points Transfer</title>
+<style>
+  /* Figma design tokens */
+  :root {
+    --bg-primary: #fdfeff;
+    --bg-input: #f7f9fb;
+    --bg-card: #ffffff;
+    --bg-badge: #e3fbff;
+    --bg-button: #4b7076;
+    --bg-segment: #f0f2f4;
+    --text-primary: #0f0f0f;
+    --text-secondary: #4b4b4b;
+    --text-tertiary: #686a6c;
+    --text-on-button: #fbfeff;
+    --text-accent: #4b7076;
+    --text-badge: #2b5056;
+    --text-gold: #866315;
+    --bg-gold: #fef9ee;
+    --border-light: #e2e4e6;
+    --green: #225438;
+    --green-bg: #e8f5ed;
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 20px;
+    --radius-pill: 999px;
+  }
+
+  @font-face {
+    font-family: 'GT America';
+    src: local('GT America VF'), local('GT America');
+    font-weight: 100 900;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'GT America', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #1a2332 url('Hero.png') center/cover no-repeat fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .phone-frame {
+    width: 402px;
+    height: 874px;
+    background: var(--bg-primary);
+    border-radius: 55px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border: 4px solid #d6d6d8;
+    box-shadow:
+      0 0 0 1px #bbbbbe,
+      0 30px 90px rgba(0, 0, 0, 0.35),
+      0 12px 36px rgba(0, 0, 0, 0.2),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    transform-origin: center center;
+    transform: scale(var(--frame-scale, 1));
+  }
+
+  .screen { display: none; flex-direction: column; flex: 1; overflow-y: auto; }
+  .screen.active { display: flex; }
+
+  /* Status bar (iOS 18) — exported image */
+  .status-bar {
+    height: 54px;
+    flex-shrink: 0;
+    background: url('status-bar.png') center/contain no-repeat;
+  }
+
+  /* Toolbar */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    height: 48px;
+    gap: 12px;
+  }
+  .toolbar-title {
+    font-size: 16px;
+    font-weight: 470;
+    color: var(--text-primary);
+    line-height: 20px;
+    letter-spacing: -0.12px;
+    flex: 1;
+    text-align: center;
+  }
+  .icon-btn {
+    width: 24px; height: 24px;
+    background: var(--bg-segment);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    border: none; cursor: pointer;
+    font-size: 11px; color: var(--text-secondary);
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .icon-btn:hover { background: #e4e6e8; }
+  .icon-btn.back { font-size: 15px; }
+
+  /* Badge */
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 8px;
+    border-radius: var(--radius-pill);
+    font-size: 12px; font-weight: 470; line-height: 16px;
+    flex-shrink: 0;
+  }
+  .badge-teal { background: var(--bg-badge); color: var(--text-badge); }
+  .badge-gold { background: var(--bg-gold); color: var(--text-gold); }
+  .badge-green { background: var(--green-bg); color: var(--green); }
+  .badge .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .badge-teal .dot { background: var(--bg-button); }
+  .badge-green .dot { background: var(--green); }
+
+  /* Heading */
+  .heading {
+    padding: 16px 20px;
+  }
+  .heading h1 {
+    font-size: 26px; font-weight: 385; line-height: 32px;
+    letter-spacing: -0.36px; color: var(--text-primary);
+  }
+  .heading h1 span { color: var(--text-accent); }
+
+  /* Auto-transfer row */
+  .auto-transfer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px; gap: 8px;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .auto-transfer:hover { background: rgba(0,0,0,0.02); }
+  .auto-transfer-left {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 14px; line-height: 18px;
+  }
+  .auto-transfer-left .label { color: var(--text-tertiary); }
+  .auto-transfer-left .value { color: var(--text-primary); font-weight: 470; }
+  .auto-transfer .chevron { color: var(--text-tertiary); font-size: 18px; }
+
+  /* Divider */
+  .divider { height: 1px; background: var(--border-light); margin: 0 20px; }
+
+  /* Segment control */
+  .segment-wrap { padding: 12px 20px; }
+  .segment {
+    display: flex; background: var(--bg-segment); border-radius: 8px;
+    padding: 2px; gap: 2px;
+  }
+  .segment-btn {
+    flex: 1; height: 32px; border: none; border-radius: 6px;
+    font-family: inherit; font-size: 14px; font-weight: 470;
+    line-height: 18px; cursor: pointer; transition: all 0.2s;
+    background: transparent; color: var(--text-tertiary);
+  }
+  .segment-btn.active {
+    background: #ffffff; color: var(--text-primary);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  /* Search */
+  .search-wrap { padding: 4px 20px 12px; }
+  .search-input {
+    width: 100%; height: 44px;
+    background: var(--bg-input); border: 1px solid var(--border-light);
+    border-radius: 12px; padding: 0 16px;
+    font-family: inherit; font-size: 14px; color: var(--text-primary);
+    line-height: 18px; outline: none;
+    transition: border-color 0.15s;
+  }
+  .search-input::placeholder { color: var(--text-tertiary); }
+  .search-input:focus { border-color: var(--bg-button); }
+
+  /* Partner list */
+  .partner-list { padding: 8px 20px 20px; display: flex; flex-direction: column; gap: 12px; }
+  .partner-tile {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px;
+    background: var(--bg-card); border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .partner-tile:hover { border-color: #cdd0d2; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .partner-logo {
+    width: 44px; height: 44px; border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 14px; font-weight: 510; line-height: 18px;
+    flex-shrink: 0;
+  }
+  .partner-info { flex: 1; }
+  .partner-name { font-size: 16px; font-weight: 470; color: var(--text-primary); line-height: 20px; letter-spacing: -0.12px; }
+  .partner-program { font-size: 14px; color: var(--text-tertiary); line-height: 18px; margin-top: 2px; }
+  .transfer-btn {
+    width: 80px; height: 36px;
+    background: var(--bg-button); border: none; border-radius: var(--radius-sm);
+    color: var(--text-on-button); font-family: inherit;
+    font-size: 14px; font-weight: 470; line-height: 18px;
+    cursor: pointer; transition: background 0.15s; flex-shrink: 0;
+  }
+  .transfer-btn:hover { background: #3d6268; }
+
+  /* Screen 2: Confirm */
+  .hero-card {
+    margin: 8px 20px;
+    background: var(--bg-card); border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg); overflow: hidden;
+  }
+  .hero-image {
+    height: 140px; display: flex; align-items: center; justify-content: center;
+  }
+  .hero-logo-big {
+    width: 56px; height: 56px; border-radius: 14px;
+    background: rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 22px; font-weight: 510;
+  }
+  .hero-details { padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .hero-badges { display: flex; gap: 8px; }
+  .hero-name { font-size: 18px; font-weight: 440; color: var(--text-primary); line-height: 22px; letter-spacing: -0.12px; }
+  .hero-desc { font-size: 14px; color: var(--text-secondary); line-height: 18px; }
+
+  .section-label {
+    font-size: 16px; font-weight: 470; color: var(--text-primary);
+    line-height: 20px; letter-spacing: -0.12px;
+  }
+
+  /* Transfer input card */
+  .amount-section { padding: 16px 20px 8px; display: flex; flex-direction: column; gap: 16px; }
+  .input-card {
+    background: var(--bg-input); border: 1px solid var(--border-light);
+    border-radius: var(--radius-md); padding: 20px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .input-row {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .input-label-col { display: flex; flex-direction: column; gap: 2px; }
+  .input-label { font-size: 12px; color: var(--text-tertiary); line-height: 16px; }
+  .input-source { font-size: 14px; font-weight: 470; color: var(--text-primary); line-height: 18px; }
+  .amount-display {
+    width: 140px; height: 44px;
+    border-radius: var(--radius-sm); padding: 0 12px;
+    display: flex; align-items: center; justify-content: flex-end;
+    font-size: 20px; font-weight: 470; line-height: 24px; letter-spacing: -0.24px;
+  }
+  .amount-from { background: #fff; border: 1px solid var(--border-light); color: var(--text-primary); }
+  .amount-to { background: var(--bg-badge); color: var(--text-accent); border: none; }
+
+  .swap-row {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .swap-line { flex: 1; height: 1px; background: var(--border-light); }
+  .swap-btn {
+    width: 32px; height: 24px; background: var(--bg-segment);
+    border: none; border-radius: 12px; cursor: pointer;
+    font-size: 14px; color: var(--text-accent);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .balance-row {
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .balance-label { font-size: 14px; color: var(--text-tertiary); line-height: 18px; }
+  .balance-value { font-size: 14px; font-weight: 470; color: var(--text-primary); line-height: 18px; }
+
+  .quick-amounts { display: flex; gap: 8px; }
+  .quick-btn {
+    flex: 1; height: 36px; border: none; border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 14px; font-weight: 470;
+    cursor: pointer; transition: all 0.15s;
+    background: var(--bg-segment); color: var(--text-secondary);
+  }
+  .quick-btn.active { background: var(--bg-button); color: var(--text-on-button); }
+  .quick-btn:hover:not(.active) { background: #e4e6e8; }
+
+  /* Details card */
+  .details-section { padding: 24px 20px 8px; display: flex; flex-direction: column; gap: 12px; }
+  .details-card {
+    background: var(--bg-input); border-radius: var(--radius-md);
+    padding: 16px; display: flex; flex-direction: column; gap: 12px;
+  }
+  .detail-row {
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .detail-label { font-size: 14px; color: var(--text-tertiary); line-height: 18px; }
+  .detail-value { font-size: 14px; font-weight: 470; color: var(--text-primary); line-height: 18px; }
+  .detail-divider { height: 1px; background: var(--border-light); }
+
+  /* Disclaimer */
+  .disclaimer {
+    padding: 12px 20px;
+    font-size: 12px; color: var(--text-tertiary); line-height: 16px;
+  }
+
+  /* CTA button */
+  .cta-wrap { padding: 8px 20px; }
+  .cta-btn {
+    width: 100%; height: 52px;
+    background: var(--bg-button); border: none; border-radius: 12px;
+    color: var(--text-on-button); font-family: inherit;
+    font-size: 16px; font-weight: 470; line-height: 20px;
+    letter-spacing: 0.12px; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .cta-btn:hover { background: #3d6268; }
+  .cta-btn.secondary {
+    background: var(--bg-segment); color: var(--text-accent);
+  }
+  .cta-btn.secondary:hover { background: #e4e6e8; }
+
+  /* Home indicator */
+  .home-indicator {
+    display: flex; justify-content: center;
+    padding: 8px 0 10px;
+    flex-shrink: 0;
+  }
+  .home-indicator-bar {
+    width: 140px; height: 5px;
+    background: #1a1a1a; border-radius: 999px;
+  }
+
+  /* Screen 3: Success */
+  .success-area {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 32px 20px 24px; gap: 20px;
+  }
+  .check-outer {
+    width: 80px; height: 80px; border-radius: 40px;
+    background: var(--green-bg);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .check-inner {
+    width: 56px; height: 56px; border-radius: 28px;
+    background: var(--green);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 24px; font-weight: 510;
+  }
+  .success-title {
+    font-size: 26px; font-weight: 470; color: var(--text-primary);
+    line-height: 32px; letter-spacing: -0.36px;
+  }
+  .success-subtitle {
+    font-size: 16px; color: var(--text-tertiary); line-height: 20px;
+    margin-top: -8px;
+  }
+
+  .summary-card {
+    margin: 8px 20px;
+    background: var(--bg-card); border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg); overflow: hidden;
+  }
+  .big-number {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 24px 20px; gap: 4px;
+  }
+  .big-number .amount {
+    font-family: 'GT America Mono', 'GT America', monospace;
+    font-size: 40px; font-weight: 470; color: var(--text-accent);
+    line-height: 44px;
+  }
+  .big-number .label { font-size: 14px; color: var(--text-tertiary); line-height: 18px; }
+  .summary-divider { height: 1px; background: var(--border-light); margin: 0 20px; }
+
+  .flow-visual { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+  .flow-row { display: flex; align-items: center; gap: 12px; }
+  .flow-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 510; flex-shrink: 0;
+  }
+  .flow-icon.bilt { background: var(--bg-input); color: var(--text-accent); font-size: 20px; }
+  .flow-icon.aa { background: #0078D2; color: #fff; font-size: 14px; }
+  .flow-label { font-size: 12px; color: var(--text-tertiary); line-height: 16px; }
+  .flow-value { font-size: 16px; font-weight: 470; color: var(--text-primary); line-height: 20px; letter-spacing: -0.12px; }
+  .flow-connector { padding-left: 20px; }
+  .flow-connector-line { width: 1px; height: 24px; background: var(--border-light); }
+
+  .summary-details { padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+
+  .actions-wrap { padding: 20px 20px 8px; display: flex; flex-direction: column; gap: 12px; }
+
+  /* Animations */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes scaleIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  .screen.active .success-area .check-outer { animation: scaleIn 0.4s ease-out; }
+  .screen.active .success-area .success-title { animation: fadeIn 0.4s ease-out 0.15s both; }
+  .screen.active .success-area .success-subtitle { animation: fadeIn 0.4s ease-out 0.25s both; }
+  .screen.active .summary-card { animation: slideUp 0.5s ease-out 0.2s both; }
+  .screen.active .actions-wrap { animation: fadeIn 0.4s ease-out 0.5s both; }
+
+  /* Screen transitions */
+  .screen-enter { animation: slideInRight 0.3s ease-out; }
+  .screen-enter-back { animation: slideInLeft 0.3s ease-out; }
+  @keyframes slideInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes slideInLeft { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+
+  <!-- SCREEN 1: Partner Selection -->
+  <div class="screen active" id="screen1">
+    <div class="status-bar"></div>
+
+    <div class="toolbar">
+      <button class="icon-btn" onclick="closeFlow()">✕</button>
+      <span class="toolbar-title">Transfer Points</span>
+      <div class="badge badge-teal"><span class="dot"></span> 21,777 pts &bull; Blue</div>
+    </div>
+
+    <div class="heading">
+      <h1>Transfer Bilt Points to<br><span>Airline Partners</span></h1>
+    </div>
+
+    <div class="auto-transfer" onclick="goToScreen(2, 'American Airlines', '#0078D2', 'AA', 'AAdvantage')">
+      <div class="auto-transfer-left">
+        <span class="label">Auto-transfer to</span>
+        <span class="value">AAdvantage</span>
+        <div class="badge badge-green"><span class="dot"></span> Enabled</div>
+      </div>
+      <span class="chevron">›</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="segment-wrap">
+      <div class="segment">
+        <button class="segment-btn active" onclick="switchTab(this)">Airlines</button>
+        <button class="segment-btn" onclick="switchTab(this)">Hotels</button>
+      </div>
+    </div>
+
+    <div class="search-wrap">
+      <input type="text" class="search-input" placeholder="Search airline partners..." oninput="filterPartners(this.value)">
+    </div>
+
+    <div class="partner-list" id="partnerList"></div>
+
+    <div class="home-indicator"><div class="home-indicator-bar"></div></div>
+  </div>
+
+  <!-- SCREEN 2: Transfer Confirm -->
+  <div class="screen" id="screen2">
+    <div class="status-bar"></div>
+
+    <div class="toolbar">
+      <button class="icon-btn back" onclick="goBack()">‹</button>
+      <span class="toolbar-title" id="confirmTitle">American Airlines</span>
+      <button class="icon-btn" onclick="goToScreen(0)">✕</button>
+    </div>
+
+    <div class="hero-card">
+      <div class="hero-image" id="heroImage" style="background: #0078D2">
+        <div class="hero-logo-big" id="heroLogo">AA</div>
+      </div>
+      <div class="hero-details">
+        <div class="hero-badges">
+          <div class="badge badge-teal">Travel rewards</div>
+          <div class="badge badge-gold">1:1 ratio</div>
+        </div>
+        <div class="hero-name" id="heroName">American Airlines</div>
+        <div class="hero-desc" id="heroDesc">AAdvantage® miles never expire. Use them on 1,000+ destinations worldwide with American and oneworld® partners.</div>
+      </div>
+    </div>
+
+    <div class="amount-section">
+      <div class="section-label">Transfer amount</div>
+      <div class="input-card">
+        <div class="input-row">
+          <div class="input-label-col">
+            <span class="input-label">From</span>
+            <span class="input-source">Bilt Points</span>
+          </div>
+          <div class="amount-display amount-from" id="amountFrom">5,000</div>
+        </div>
+        <div class="swap-row">
+          <div class="swap-line"></div>
+          <button class="swap-btn">⇅</button>
+          <div class="swap-line"></div>
+        </div>
+        <div class="input-row">
+          <div class="input-label-col">
+            <span class="input-label">To</span>
+            <span class="input-source" id="destProgram">AAdvantage Miles</span>
+          </div>
+          <div class="amount-display amount-to" id="amountTo">5,000</div>
+        </div>
+      </div>
+      <div class="balance-row">
+        <span class="balance-label">Available balance</span>
+        <span class="balance-value">21,777 Bilt Points</span>
+      </div>
+      <div class="quick-amounts">
+        <button class="quick-btn" onclick="setAmount(1000, this)">1,000</button>
+        <button class="quick-btn active" onclick="setAmount(5000, this)">5,000</button>
+        <button class="quick-btn" onclick="setAmount(10000, this)">10,000</button>
+        <button class="quick-btn" onclick="setAmount(21777, this)">Max</button>
+      </div>
+    </div>
+
+    <div class="details-section">
+      <div class="section-label">Transfer details</div>
+      <div class="details-card">
+        <div class="detail-row">
+          <span class="detail-label">Transfer ratio</span>
+          <span class="detail-value">1 pt → 1 mile</span>
+        </div>
+        <div class="detail-divider"></div>
+        <div class="detail-row">
+          <span class="detail-label">Processing time</span>
+          <span class="detail-value">Instant</span>
+        </div>
+        <div class="detail-divider"></div>
+        <div class="detail-row">
+          <span class="detail-label">Minimum transfer</span>
+          <span class="detail-value">1,000 points</span>
+        </div>
+        <div class="detail-divider"></div>
+        <div class="detail-row">
+          <span class="detail-label">Member number</span>
+          <span class="detail-value">•••• 7842</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="disclaimer">Points transfers are final and cannot be reversed. By transferring, you agree to the AAdvantage® program terms.</div>
+
+    <div class="cta-wrap">
+      <button class="cta-btn" id="ctaBtn" onclick="confirmTransfer()">Transfer 5,000 Points</button>
+    </div>
+
+    <div class="home-indicator"><div class="home-indicator-bar"></div></div>
+  </div>
+
+  <!-- SCREEN 3: Success -->
+  <div class="screen" id="screen3">
+    <div class="status-bar"></div>
+
+    <div class="toolbar">
+      <span style="width:24px"></span>
+      <span class="toolbar-title"></span>
+      <button class="icon-btn" onclick="goToScreen(0)">✕</button>
+    </div>
+
+    <div class="success-area">
+      <div class="check-outer">
+        <div class="check-inner">✓</div>
+      </div>
+      <div class="success-title">Transfer Complete</div>
+      <div class="success-subtitle">Your points are on their way</div>
+    </div>
+
+    <div class="summary-card">
+      <div class="big-number">
+        <span class="amount" id="successAmount">5,000</span>
+        <span class="label">points transferred</span>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="flow-visual">
+        <div class="flow-row">
+          <div class="flow-icon bilt">B</div>
+          <div>
+            <div class="flow-label">From</div>
+            <div class="flow-value">Bilt Points</div>
+          </div>
+        </div>
+        <div class="flow-connector"><div class="flow-connector-line"></div></div>
+        <div class="flow-row">
+          <div class="flow-icon aa" id="successIcon" style="background:#0078D2">AA</div>
+          <div>
+            <div class="flow-label">To</div>
+            <div class="flow-value" id="successDest">AAdvantage Miles</div>
+          </div>
+        </div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-details">
+        <div class="detail-row">
+          <span class="detail-label">Transfer ID</span>
+          <span class="detail-value" id="transferId">BLT-7829-4A3F</span>
+        </div>
+        <div class="detail-divider"></div>
+        <div class="detail-row">
+          <span class="detail-label">Date</span>
+          <span class="detail-value">Mar 12, 2026</span>
+        </div>
+        <div class="detail-divider"></div>
+        <div class="detail-row">
+          <span class="detail-label">Status</span>
+          <div class="badge badge-green"><span class="dot"></span> Complete</div>
+        </div>
+        <div class="detail-divider"></div>
+        <div class="detail-row">
+          <span class="detail-label">New Bilt balance</span>
+          <span class="detail-value" id="newBalance">16,777 pts</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions-wrap">
+      <button class="cta-btn" onclick="goToScreen(0)">Done</button>
+      <button class="cta-btn secondary" onclick="goToScreen(0)">Transfer More Points</button>
+    </div>
+
+    <div class="home-indicator"><div class="home-indicator-bar"></div></div>
+  </div>
+
+</div>
+
+<script>
+  const airlines = [
+    { name: 'American Airlines', program: 'AAdvantage', code: 'AA', color: '#0078D2', desc: 'AAdvantage® miles never expire. Use them on 1,000+ destinations worldwide with American and oneworld® partners.' },
+    { name: 'United Airlines', program: 'MileagePlus', code: 'UA', color: '#002244', desc: 'MileagePlus miles open up a world of travel across United and Star Alliance partners to 190+ countries.' },
+    { name: 'Alaska Airlines', program: 'Mileage Plan', code: 'AS', color: '#01426A', desc: 'Mileage Plan lets you redeem miles across Alaska and oneworld® alliance partners for global travel.' },
+    { name: 'Air Canada', program: 'Aeroplan', code: 'AC', color: '#F01428', desc: 'Aeroplan points unlock flights on Air Canada and 40+ Star Alliance airlines to destinations worldwide.' },
+    { name: 'Emirates', program: 'Skywards', code: 'EK', color: '#D71921', desc: 'Skywards Miles let you fly Emirates and flydubai to 150+ destinations in premium comfort.' },
+    { name: 'Turkish Airlines', program: 'Miles&Smiles', code: 'TK', color: '#C8102E', desc: 'Miles&Smiles lets you earn and redeem across Turkish Airlines and Star Alliance to 300+ destinations.' },
+    { name: 'British Airways', program: 'Avios', code: 'BA', color: '#075AAA', desc: 'Avios points work across British Airways, Iberia, and oneworld® partners for worldwide redemptions.' },
+    { name: 'Cathay Pacific', program: 'Asia Miles', code: 'CX', color: '#006564', desc: 'Asia Miles open up premium travel across Cathay Pacific and oneworld® partners throughout Asia and beyond.' },
+  ];
+
+  let currentAmount = 5000;
+  let selectedAirline = airlines[0];
+
+  // Render partner list
+  function renderPartners(filter = '') {
+    const list = document.getElementById('partnerList');
+    const filtered = airlines.filter(a =>
+      a.name.toLowerCase().includes(filter.toLowerCase()) ||
+      a.program.toLowerCase().includes(filter.toLowerCase())
+    );
+    list.innerHTML = filtered.map(a => `
+      <div class="partner-tile" onclick="goToScreen(2, '${a.name}', '${a.color}', '${a.code}', '${a.program}')">
+        <div class="partner-logo" style="background:${a.color}">${a.code}</div>
+        <div class="partner-info">
+          <div class="partner-name">${a.name}</div>
+          <div class="partner-program">${a.program}  &bull;  1:1</div>
+        </div>
+        <button class="transfer-btn" onclick="event.stopPropagation(); goToScreen(2, '${a.name}', '${a.color}', '${a.code}', '${a.program}')">Transfer</button>
+      </div>
+    `).join('');
+  }
+
+  function filterPartners(val) { renderPartners(val); }
+
+  function switchTab(btn) {
+    btn.parentElement.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function goToScreen(num, name, color, code, program) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+
+    if (num === 2) {
+      selectedAirline = airlines.find(a => a.name === name) || airlines[0];
+      document.getElementById('confirmTitle').textContent = name;
+      document.getElementById('heroImage').style.background = color;
+      document.getElementById('heroLogo').textContent = code;
+      document.getElementById('heroName').textContent = name;
+      document.getElementById('heroDesc').textContent = selectedAirline.desc;
+      document.getElementById('destProgram').textContent = program + ' Miles';
+      setAmount(5000, document.querySelectorAll('.quick-btn')[1]);
+
+      const screen = document.getElementById('screen2');
+      screen.classList.add('active', 'screen-enter');
+      setTimeout(() => screen.classList.remove('screen-enter'), 300);
+    } else if (num === 0) {
+      const screen = document.getElementById('screen1');
+      screen.classList.add('active');
+    }
+  }
+
+  function goBack() {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const screen = document.getElementById('screen1');
+    screen.classList.add('active', 'screen-enter-back');
+    setTimeout(() => screen.classList.remove('screen-enter-back'), 300);
+  }
+
+  function setAmount(amt, btn) {
+    currentAmount = amt;
+    const formatted = amt.toLocaleString();
+    document.getElementById('amountFrom').textContent = formatted;
+    document.getElementById('amountTo').textContent = formatted;
+    document.getElementById('ctaBtn').textContent = `Transfer ${formatted} Points`;
+    document.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+  }
+
+  function confirmTransfer() {
+    const formatted = currentAmount.toLocaleString();
+    const newBal = (21777 - currentAmount).toLocaleString();
+
+    document.getElementById('successAmount').textContent = formatted;
+    document.getElementById('successDest').textContent = selectedAirline.program + ' Miles';
+    document.getElementById('successIcon').textContent = selectedAirline.code;
+    document.getElementById('successIcon').style.background = selectedAirline.color;
+    document.getElementById('newBalance').textContent = newBal + ' pts';
+    document.getElementById('transferId').textContent = 'BLT-' + Math.random().toString(36).substr(2, 4).toUpperCase() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
+
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const screen = document.getElementById('screen3');
+    screen.classList.add('active', 'screen-enter');
+    setTimeout(() => screen.classList.remove('screen-enter'), 300);
+  }
+
+  function closeFlow() {
+    alert('Flow closed — would return to Bilt home screen');
+  }
+
+  // Init
+  renderPartners();
+
+  /* Responsive phone frame scaling */
+  function scaleFrame() {
+    const frame = document.querySelector('.phone-frame');
+    if (!frame) return;
+    const sx = (window.innerWidth - 60) / 410;
+    const sy = (window.innerHeight - 60) / 882;
+    frame.style.setProperty('--frame-scale', Math.min(1, sx, sy));
+  }
+  window.addEventListener('resize', scaleFrame);
+  scaleFrame();
+</script>
+
+</body>
+</html>

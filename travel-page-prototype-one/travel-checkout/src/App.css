@@ -1,0 +1,442 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --gold: #8B7535;
+  --gold-bg: #F5F0E0;
+  --gold-border: #D4C48A;
+  --green: #5E7A3A;
+  --red: #C41230;
+  --gray-50: #f8f8f8;
+  --gray-100: #f0f0f0;
+  --gray-200: #e5e5e5;
+  --gray-400: #999;
+  --gray-500: #777;
+  --gray-600: #555;
+  --gray-800: #1a1a1a;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 999px;
+}
+
+#root {
+  max-width: unset;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+/* iPhone 16 Pro Frame — Silver Titanium */
+.phone-frame {
+  width: 402px;
+  height: 874px;
+  background: #fff;
+  border-radius: 55px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border: 4px solid #d6d6d8;
+  box-shadow:
+    0 0 0 1px #bbbbbe,
+    0 30px 90px rgba(0, 0, 0, 0.35),
+    0 12px 36px rgba(0, 0, 0, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  /* Responsive scaling */
+  transform-origin: center center;
+  transform: scale(var(--frame-scale, 1));
+}
+
+/* Status Bar (iOS 18) — exported image */
+.status-bar {
+  height: 54px;
+  flex-shrink: 0;
+  background: url('/status-bar.png') center/contain no-repeat;
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 20px 4px;
+  flex-shrink: 0;
+}
+
+.icon-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--gray-100);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.icon-circle:hover {
+  background: var(--gray-200);
+}
+
+/* Scrollable Content */
+.scroll-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 8px;
+}
+
+/* Heading */
+.heading-section {
+  padding: 24px 24px 16px;
+}
+
+.destination {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--gray-800);
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.trip-meta {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13.5px;
+  color: var(--gray-500);
+}
+
+.meta-icon {
+  flex-shrink: 0;
+}
+
+/* Tab Rail */
+.tab-rail-wrapper {
+  padding: 0 20px 16px;
+  overflow-x: auto;
+}
+
+.tab-rail {
+  display: flex;
+  gap: 8px;
+}
+
+.tab-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--gray-100);
+  color: var(--gray-800);
+  font-size: 13.5px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.tab-chip:hover {
+  background: var(--gray-200);
+}
+
+.tab-chip.active {
+  background: var(--gray-800);
+  color: #fff;
+}
+
+.tab-chip.active .chip-icon {
+  color: #fff;
+}
+
+.chip-icon {
+  display: flex;
+  align-items: center;
+  color: var(--gray-600);
+}
+
+/* Banner */
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 20px 16px;
+  padding: 14px 16px;
+  background: #fff;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.banner:hover {
+  background: var(--gray-50);
+}
+
+.banner-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.banner-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.banner-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.banner-sub {
+  font-size: 12.5px;
+  color: var(--gray-500);
+}
+
+.banner-close {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background 0.15s;
+}
+
+.banner-close:hover {
+  background: var(--gray-100);
+}
+
+/* Flight Card */
+.flight-card {
+  margin: 0 20px;
+  padding: 20px;
+  background: #fff;
+  border-radius: var(--radius-xl);
+  box-shadow:
+    0 1px 3px rgba(0,0,0,0.04),
+    0 4px 12px rgba(0,0,0,0.06),
+    0 0 0 1px rgba(0,0,0,0.04);
+}
+
+/* Airline Header */
+.airline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.airline-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.airline-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-800);
+}
+
+.pnr-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--gold-border);
+  background: transparent;
+  color: var(--gold);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.pnr-badge:hover {
+  background: var(--gold-bg);
+}
+
+/* Flight Leg */
+.flight-leg {
+  padding: 4px 0;
+}
+
+.flight-times {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.time-label {
+  font-size: 13px;
+  color: var(--gray-500);
+}
+
+.flight-route {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.airport-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.airport-col.left {
+  align-items: flex-start;
+  min-width: 65px;
+}
+
+.airport-col.right {
+  align-items: flex-end;
+  min-width: 65px;
+}
+
+.airport-code {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--gray-800);
+  letter-spacing: -0.3px;
+  line-height: 1.1;
+}
+
+.terminal {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gold);
+}
+
+.city-name {
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.flight-path {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 8px 8px 0;
+}
+
+.path-line {
+  flex: 1;
+  height: 1.5px;
+  background: var(--gray-200);
+}
+
+.plane-svg {
+  flex-shrink: 0;
+  margin: 0 2px;
+}
+
+.duration-label {
+  text-align: center;
+  font-size: 12px;
+  color: var(--gray-500);
+  margin-top: 2px;
+}
+
+.card-divider {
+  height: 1px;
+  background: var(--gray-200);
+  margin: 16px 0;
+}
+
+/* Bottom Bar */
+.bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: #fff;
+  flex-shrink: 0;
+  border-top: 1px solid var(--gray-200);
+}
+
+.booking-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.booked-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.booked-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--green);
+}
+
+.passenger-count {
+  font-size: 12.5px;
+  color: var(--gray-500);
+  padding-left: 26px;
+}
+
+.manage-btn {
+  padding: 10px 24px;
+  background: var(--gold);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.manage-btn:hover {
+  background: #7A6630;
+}
+
+/* Home Indicator */
+.home-indicator {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 10px;
+  flex-shrink: 0;
+}
+
+.indicator-pill {
+  width: 140px;
+  height: 5px;
+  background: #1a1a1a;
+  border-radius: 999px;
+}
