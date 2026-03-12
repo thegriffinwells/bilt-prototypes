@@ -324,6 +324,10 @@
           <span class="info-label">Project</span>
           <span class="info-value" id="infoProject"></span>
         </div>
+        <div class="info-field">
+          <span class="info-label">Share</span>
+          <span class="info-value" id="infoShare"></span>
+        </div>
         <a class="open-btn" id="openBtn" href="#" target="_blank">Open in new tab &#8599;</a>
       </div>
       <button class="fab" id="infoToggle" title="Prototype info">
@@ -370,8 +374,11 @@
       document.getElementById('infoPanel').classList.toggle('open', infoOpen);
     });
 
-    const latest = prototypes[0];
-    if (latest) selectPrototype(latest.id);
+    // Support deep-linking: #points-transfer loads that prototype
+    const hash = location.hash.replace('#', '');
+    const fromHash = prototypes.find(p => p.id === hash);
+    const initial = fromHash || prototypes[0];
+    if (initial) selectPrototype(initial.id);
   }
 
   function renderToc() {
@@ -400,6 +407,8 @@
     const p = prototypes.find(x => x.id === id);
     if (!p) return;
 
+    history.replaceState(null, '', '#' + id);
+
     const frame = document.getElementById('previewFrame');
     frame.classList.add('active');
     document.getElementById('infoWrap').style.display = '';
@@ -418,6 +427,8 @@
     document.getElementById('infoDate').textContent = formatDateLong(p.created);
     document.getElementById('infoPort').innerHTML = `<a href="http://localhost:${p.port}" target="_blank">localhost:${p.port}</a>`;
     document.getElementById('infoProject').textContent = p.project;
+    const shareUrl = `https://thegriffinwells.github.io/bilt-prototypes/${p.path}`;
+    document.getElementById('infoShare').innerHTML = `<a href="${shareUrl}" target="_blank">${shareUrl.replace('https://', '')}</a>`;
     document.getElementById('openBtn').href = `http://localhost:${p.port}`;
 
     document.getElementById('infoStatus').innerHTML = p.online

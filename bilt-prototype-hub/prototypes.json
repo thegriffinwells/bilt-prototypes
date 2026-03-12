@@ -4,6 +4,7 @@
     "name": "Travel Checkout",
     "description": "First attempt using Figma MCP with Claude Code — gave it one frame and it built this flight booking flow.",
     "port": 5173,
+    "path": "travel-checkout/",
     "project": "travel-page-prototype-one",
     "created": "2026-03-10"
   },
@@ -12,6 +13,7 @@
     "name": "Points Transfer",
     "description": "Pointed Claude Code and Figma MCP via Chrome DevTools at the local components file from Travel Checkout — it generated this transfer flow.",
     "port": 8080,
+    "path": "points-transfer/",
     "project": "partner-travel-flow-figma-mcp",
     "created": "2026-03-11"
   },
@@ -20,6 +22,7 @@
     "name": "JOIST Transfer",
     "description": "Pointed Claude and Figma MCP at the entire components page and had it build a transfer flow informed by the JOIST design system.",
     "port": 3000,
+    "path": "joist-transfer/",
     "project": "joist-view",
     "created": "2026-03-12"
   },
@@ -28,6 +31,7 @@
     "name": "AI Concierge",
     "description": "Coworker Colin was presenting during a design review — had Claude bring his designs to life in real time.",
     "port": 5174,
+    "path": "ai-concierge/",
     "project": "colin-prototype",
     "created": "2026-03-12"
   }

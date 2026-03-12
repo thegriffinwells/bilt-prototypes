@@ -214,6 +214,24 @@
   }
   .info-value a:hover { text-decoration: underline; }
 
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    background: rgba(72, 187, 120, 0.15);
+    color: #48bb78;
+  }
+  .status-badge .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
   .open-btn {
     display: block;
     width: 100%;
@@ -260,6 +278,10 @@
       <div class="info-panel" id="infoPanel">
         <h2 id="infoName"></h2>
         <div class="info-field">
+          <span class="info-label">Status</span>
+          <span class="info-value" id="infoStatus"></span>
+        </div>
+        <div class="info-field">
           <span class="info-label">Description</span>
           <span class="info-value" id="infoDesc"></span>
         </div>
@@ -283,6 +305,7 @@
 </div>
 
 <script>
+  const PAGES_BASE = 'https://thegriffinwells.github.io/bilt-prototypes/';
   let prototypes = [];
   let selected = null;
   let tocOpen = false;
@@ -305,8 +328,11 @@
       document.getElementById('infoPanel').classList.toggle('open', infoOpen);
     });
 
-    const latest = prototypes[0];
-    if (latest) selectPrototype(latest.id);
+    // Support deep-linking: #points-transfer loads that prototype
+    const hash = location.hash.replace('#', '');
+    const fromHash = prototypes.find(p => p.id === hash);
+    const initial = fromHash || prototypes[0];
+    if (initial) selectPrototype(initial.id);
   }
 
   function renderToc() {
@@ -335,6 +361,9 @@
     const p = prototypes.find(x => x.id === id);
     if (!p) return;
 
+    // Update hash for deep-linking
+    history.replaceState(null, '', '#' + id);
+
     const frame = document.getElementById('previewFrame');
     frame.classList.add('active');
     document.getElementById('infoWrap').style.display = '';
@@ -349,6 +378,7 @@
     frame.src = p.path;
 
     document.getElementById('infoName').textContent = p.name;
+    document.getElementById('infoStatus').innerHTML = '<span class="status-badge"><span class="dot"></span>Live</span>';
     document.getElementById('infoDesc').textContent = p.description;
     document.getElementById('infoDate').textContent = formatDateLong(p.created);
     document.getElementById('infoProject').textContent = p.project;
