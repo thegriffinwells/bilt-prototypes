@@ -175,72 +175,66 @@
         </feMerge>
       </filter>
 
-      <!-- Crystal / Glass — translucent refractive with prismatic highlights -->
-      <filter id="crystal" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="linearRGB">
-        <!-- Step 1: Smooth surface for lighting -->
-        <feGaussianBlur id="cry-blur" in="SourceAlpha" stdDeviation="0.8" result="surfaceBlur"/>
+      <!-- Crystal / Swarovski — bright faceted crystal with sparkle highlights -->
+      <filter id="crystal" x="-12%" y="-12%" width="124%" height="124%" color-interpolation-filters="sRGB">
+        <!-- Step 1: Blue crystal base -->
+        <feFlood flood-color="#82B4DA" flood-opacity="1" result="blueFill"/>
+        <feComposite in="blueFill" in2="SourceAlpha" operator="in" result="blueShape"/>
 
-        <!-- Step 2: Glass base — translucent tinted fill -->
-        <feFlood id="cry-base-color" flood-color="#C8E4F8" flood-opacity="0.5" result="glassFill"/>
-        <feComposite in="glassFill" in2="SourceAlpha" operator="in" result="glassShape"/>
-
-        <!-- Step 3: Internal refraction — prismatic color shift -->
-        <feTurbulence id="cry-refract" type="turbulence" baseFrequency="0.06" numOctaves="2" seed="5" result="refractNoise"/>
-        <feDisplacementMap in="SourceAlpha" in2="refractNoise" scale="0.4" xChannelSelector="R" yChannelSelector="G" result="refracted"/>
-        <feGaussianBlur in="refracted" stdDeviation="0.3" result="refractedBlur"/>
-
-        <!-- Step 4: Prismatic rainbow tint inside the shape -->
-        <feTurbulence id="cry-prism" type="turbulence" baseFrequency="0.08" numOctaves="3" seed="12" result="prismNoise"/>
-        <feColorMatrix in="prismNoise" type="saturate" values="2.5" result="prismColor"/>
-        <feComponentTransfer in="prismColor" result="prismTint">
-          <feFuncA type="linear" slope="0.15" intercept="0"/>
+        <!-- Step 2: Facet pattern as luminance variation -->
+        <feTurbulence id="cry-facets" type="turbulence" baseFrequency="0.12" numOctaves="2" seed="5" result="facetRaw"/>
+        <feColorMatrix in="facetRaw" type="luminanceToAlpha" result="facetLum"/>
+        <!-- Discrete steps for angular faceted look -->
+        <feComponentTransfer in="facetLum" result="facetSteps">
+          <feFuncA type="discrete" tableValues="0.3 0.5 0.65 0.8 0.95"/>
         </feComponentTransfer>
-        <feComposite in="prismTint" in2="SourceAlpha" operator="in" result="prismClipped"/>
+        <!-- White facet highlights -->
+        <feFlood flood-color="#ffffff" result="white"/>
+        <feComposite in="white" in2="facetSteps" operator="in" result="facetWhite"/>
+        <feComposite in="facetWhite" in2="SourceAlpha" operator="in" result="facetClipped"/>
 
-        <!-- Step 5: Strong specular — glass is very shiny -->
-        <feSpecularLighting id="cry-specular" in="surfaceBlur" surfaceScale="4" specularConstant="1.5" specularExponent="50" lighting-color="#ffffff" result="specular">
-          <feDistantLight id="cry-spec-light" azimuth="315" elevation="60"/>
+        <!-- Step 3: Blend white facets onto blue base with screen -->
+        <feBlend in="blueShape" in2="facetClipped" mode="screen" result="blueCrystal"/>
+
+        <!-- Step 4: Surface for specular lighting -->
+        <feGaussianBlur id="cry-blur" in="SourceAlpha" stdDeviation="0.6" result="surfaceBlur"/>
+
+        <!-- Step 6: Bright specular sparkle — small sharp highlights -->
+        <feSpecularLighting id="cry-specular" in="surfaceBlur" surfaceScale="4" specularConstant="1.2" specularExponent="60" lighting-color="#ffffff" result="specular">
+          <feDistantLight id="cry-spec-light" azimuth="315" elevation="55"/>
         </feSpecularLighting>
         <feComposite in="specular" in2="SourceAlpha" operator="in" result="specClipped"/>
 
-        <!-- Step 6: Secondary specular from opposite angle -->
-        <feSpecularLighting id="cry-specular2" in="surfaceBlur" surfaceScale="2.5" specularConstant="0.6" specularExponent="30" lighting-color="#E8F0FF" result="specular2">
+        <!-- Step 7: Secondary sparkle -->
+        <feSpecularLighting id="cry-specular2" in="surfaceBlur" surfaceScale="2" specularConstant="0.5" specularExponent="45" lighting-color="#E0F0FF" result="specular2">
           <feDistantLight azimuth="135" elevation="40"/>
         </feSpecularLighting>
         <feComposite in="specular2" in2="SourceAlpha" operator="in" result="spec2Clipped"/>
 
-        <!-- Step 7: Diffuse for body form -->
-        <feDiffuseLighting id="cry-diffuse" in="surfaceBlur" surfaceScale="3" diffuseConstant="0.7" lighting-color="#F0F8FF" result="diffuse">
-          <feDistantLight azimuth="315" elevation="50"/>
-        </feDiffuseLighting>
-        <feComposite in="diffuse" in2="SourceAlpha" operator="in" result="diffClipped"/>
-
-        <!-- Step 8: Edge highlight — crisp bevel for faceted look -->
-        <feOffset id="cry-bevel-light" in="SourceAlpha" dx="-0.15" dy="-0.15" result="bevelLightOff"/>
-        <feGaussianBlur id="cry-bevel-blur" in="bevelLightOff" stdDeviation="0.15" result="bevelBlur"/>
+        <!-- Step 8: Edge bevel highlight -->
+        <feOffset id="cry-bevel-light" in="SourceAlpha" dx="-0.12" dy="-0.12" result="bevelLightOff"/>
+        <feGaussianBlur id="cry-bevel-blur" in="bevelLightOff" stdDeviation="0.1" result="bevelBlur"/>
         <feComposite in="bevelBlur" in2="SourceAlpha" operator="arithmetic" k1="0" k2="1" k3="-1" k4="0" result="bevelEdge"/>
-        <feFlood flood-color="#ffffff" flood-opacity="0.7" result="bevelColor"/>
+        <feFlood flood-color="#ffffff" flood-opacity="0.8" result="bevelColor"/>
         <feComposite in="bevelColor" in2="bevelEdge" operator="in" result="bevelHighlight"/>
 
         <!-- Step 9: Edge shadow -->
-        <feOffset in="SourceAlpha" dx="0.15" dy="0.15" result="bevelDarkOff"/>
-        <feGaussianBlur in="bevelDarkOff" stdDeviation="0.15" result="bevelDarkBlur"/>
+        <feOffset in="SourceAlpha" dx="0.12" dy="0.12" result="bevelDarkOff"/>
+        <feGaussianBlur in="bevelDarkOff" stdDeviation="0.1" result="bevelDarkBlur"/>
         <feComposite in="bevelDarkBlur" in2="SourceAlpha" operator="arithmetic" k1="0" k2="1" k3="-1" k4="0" result="bevelDarkEdge"/>
-        <feFlood flood-color="#4477AA" flood-opacity="0.4" result="bevelDarkColor"/>
+        <feFlood flood-color="#3366AA" flood-opacity="0.4" result="bevelDarkColor"/>
         <feComposite in="bevelDarkColor" in2="bevelDarkEdge" operator="in" result="bevelShadow"/>
 
-        <!-- Step 10: Soft colored drop shadow -->
+        <!-- Step 10: Drop shadow -->
         <feOffset id="cry-shadow-offset" in="SourceAlpha" dx="0.3" dy="0.5" result="shadowOff"/>
-        <feGaussianBlur id="cry-shadow-blur" in="shadowOff" stdDeviation="0.8" result="shadowBlur"/>
-        <feFlood id="cry-shadow-color" flood-color="#224466" flood-opacity="0.3" result="shadowFill"/>
+        <feGaussianBlur id="cry-shadow-blur" in="shadowOff" stdDeviation="0.7" result="shadowBlur"/>
+        <feFlood id="cry-shadow-color" flood-color="#335588" flood-opacity="0.2" result="shadowFill"/>
         <feComposite in="shadowFill" in2="shadowBlur" operator="in" result="dropShadow"/>
 
-        <!-- Step 11: Merge — shadow → glass → diffuse → prism → bevel → specular -->
+        <!-- Step 11: Merge -->
         <feMerge>
           <feMergeNode in="dropShadow"/>
-          <feMergeNode in="glassShape"/>
-          <feMergeNode in="diffClipped"/>
-          <feMergeNode in="prismClipped"/>
+          <feMergeNode in="blueCrystal"/>
           <feMergeNode in="bevelShadow"/>
           <feMergeNode in="bevelHighlight"/>
           <feMergeNode in="spec2Clipped"/>
