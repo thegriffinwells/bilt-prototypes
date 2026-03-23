@@ -177,24 +177,36 @@
 
       <!-- Crystal / Swarovski — bright faceted crystal with sparkle highlights -->
       <filter id="crystal" x="-12%" y="-12%" width="124%" height="124%" color-interpolation-filters="sRGB">
-        <!-- Step 1: Blue crystal base -->
-        <feFlood flood-color="#82B4DA" flood-opacity="1" result="blueFill"/>
+        <!-- Step 1: Light blue crystal base -->
+        <feFlood flood-color="#7CB8E0" flood-opacity="1" result="blueFill"/>
         <feComposite in="blueFill" in2="SourceAlpha" operator="in" result="blueShape"/>
 
-        <!-- Step 2: Facet pattern as luminance variation -->
-        <feTurbulence id="cry-facets" type="turbulence" baseFrequency="0.12" numOctaves="2" seed="5" result="facetRaw"/>
+        <!-- Step 2: Facet/refraction pattern — angular light variation -->
+        <feTurbulence id="cry-facets" type="turbulence" baseFrequency="0.1" numOctaves="3" seed="5" result="facetRaw"/>
         <feColorMatrix in="facetRaw" type="luminanceToAlpha" result="facetLum"/>
-        <!-- Discrete steps for angular faceted look -->
         <feComponentTransfer in="facetLum" result="facetSteps">
-          <feFuncA type="discrete" tableValues="0.3 0.5 0.65 0.8 0.95"/>
+          <feFuncA type="discrete" tableValues="0.15 0.35 0.55 0.75 0.95"/>
         </feComponentTransfer>
-        <!-- White facet highlights -->
         <feFlood flood-color="#ffffff" result="white"/>
         <feComposite in="white" in2="facetSteps" operator="in" result="facetWhite"/>
         <feComposite in="facetWhite" in2="SourceAlpha" operator="in" result="facetClipped"/>
 
-        <!-- Step 3: Blend white facets onto blue base with screen -->
-        <feBlend in="blueShape" in2="facetClipped" mode="screen" result="blueCrystal"/>
+        <!-- Step 3: Deeper blue shadow pattern for depth -->
+        <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="19" result="depthNoise"/>
+        <feColorMatrix in="depthNoise" type="luminanceToAlpha" result="depthLum"/>
+        <feComponentTransfer in="depthLum" result="depthMask">
+          <feFuncA type="linear" slope="0.3" intercept="0"/>
+        </feComponentTransfer>
+        <feFlood flood-color="#3A6E99" result="deepBlue"/>
+        <feComposite in="deepBlue" in2="depthMask" operator="in" result="depthClipped"/>
+        <feComposite in="depthClipped" in2="SourceAlpha" operator="in" result="depthInShape"/>
+
+        <!-- Step 4: Compose: blue base + deep shadows + white facets -->
+        <feMerge result="blueCrystal">
+          <feMergeNode in="blueShape"/>
+          <feMergeNode in="depthInShape"/>
+          <feMergeNode in="facetClipped"/>
+        </feMerge>
 
         <!-- Step 4: Surface for specular lighting -->
         <feGaussianBlur id="cry-blur" in="SourceAlpha" stdDeviation="0.6" result="surfaceBlur"/>
@@ -358,6 +370,8 @@
       <div class="viewer-info" id="viewer-info"></div>
     </main>
   </div>
+
+  <div class="toast" id="toast"></div>
 
   <script src="icons.js"></script>
   <script src="app.js"></script>

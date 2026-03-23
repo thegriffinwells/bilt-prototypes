@@ -180,22 +180,23 @@ function updatePreview() {
   viewerInfo.textContent = `${activeIcon} · ${activeSize}px · ${activeStyle}`;
 }
 
-// ─── Viewer background ───
+// ─── Default backgrounds per style ───
+const STYLE_BG = {
+  embossed: { light: null, dark: null, transparent: null }, // uses activeColor
+  metallic: { light: "#D0D0D4", dark: "#505058", transparent: null },
+  leather: { light: "#D4B896", dark: "#5C3D20", transparent: null },
+  crystal: { light: "#F0F4FA", dark: "#2A3648", transparent: null },
+};
+
 function updateViewerBackground() {
+  viewer.style.backgroundColor = "";
   if (activeStyle === "embossed") {
     viewer.style.backgroundColor = activeColor;
     viewer.className = "viewer";
-  } else if (activeStyle === "metallic") {
-    viewer.style.backgroundColor = "#B8B8BC";
-    viewer.className = "viewer";
-  } else if (activeStyle === "leather") {
-    viewer.style.backgroundColor = "#D4B896";
-    viewer.className = "viewer";
-  } else if (activeStyle === "crystal") {
-    viewer.style.backgroundColor = "#F5F8FC";
+  } else if (STYLE_BG[activeStyle] && activeBg !== "transparent") {
+    viewer.style.backgroundColor = STYLE_BG[activeStyle][activeBg] || "";
     viewer.className = "viewer";
   } else {
-    viewer.style.backgroundColor = "";
     viewer.className = "viewer bg-" + activeBg;
   }
 }
@@ -569,8 +570,9 @@ function prepareExportClone(clone) {
     const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
     rect.setAttribute("width", vb[2]);
     rect.setAttribute("height", vb[3]);
-    const bgColors = { metallic: "#B8B8BC", leather: "#D4B896", crystal: "#F5F8FC", embossed: activeColor };
-    rect.setAttribute("fill", bgColors[activeStyle] || activeColor);
+    const bgMap = STYLE_BG[activeStyle];
+    const bgColor = activeStyle === "embossed" ? activeColor : (bgMap ? bgMap[activeBg] || "#F0F0F4" : "#F0F0F4");
+    rect.setAttribute("fill", bgColor || "#F0F0F4");
     clone.insertBefore(rect, clone.querySelector("g"));
   }
 }
@@ -617,13 +619,25 @@ function exportPNG() {
   img.src = dataUrl;
 }
 
+// ─── Toast notification ───
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(toast._timeout);
+  toast._timeout = setTimeout(() => toast.classList.remove("show"), 2000);
+}
+
 // ─── Copy SVG ───
 function copySVG() {
   if (!activeIcon) return;
   const clone = previewSvg.cloneNode(true);
   prepareExportClone(clone);
   const svgStr = new XMLSerializer().serializeToString(clone);
-  navigator.clipboard.writeText(svgStr).then(() => flashButton("copy-svg", "Copied!"));
+  navigator.clipboard.writeText(svgStr).then(
+    () => showToast("SVG copied to clipboard"),
+    () => showToast("Copy failed — check permissions")
+  );
 }
 
 // ─── Copy PNG ───
@@ -646,25 +660,19 @@ function copyPNG() {
     const ctx = canvas.getContext("2d");
     ctx.drawImage(img, 0, 0, w, h);
     canvas.toBlob(blob => {
-      if (blob) {
-        navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]).then(() => flashButton("copy-png", "Copied!"));
+      if (!blob) { showToast("PNG export failed"); return; }
+      try {
+        navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]).then(
+          () => showToast("PNG copied to clipboard"),
+          () => showToast("Copy failed — check permissions")
+        );
+      } catch (e) {
+        showToast("ClipboardItem not supported in this browser");
       }
     }, "image/png");
   };
+  img.onerror = () => showToast("PNG render failed");
   img.src = dataUrl;
-}
-
-function flashButton(id, text) {
-  const btn = document.getElementById(id);
-  const original = btn.textContent;
-  btn.textContent = text;
-  btn.style.background = "var(--accent)";
-  btn.style.color = "#fff";
-  setTimeout(() => {
-    btn.textContent = original;
-    btn.style.background = "";
-    btn.style.color = "";
-  }, 1500);
 }
 
 // ─── Download helper ───
