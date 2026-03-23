@@ -411,3 +411,6 @@ function downloadBlob(blob, filename) {
 // ─── Boot ───
 updateControlsVisibility();
 init();
+// Select first icon by default
+const firstIcon = Object.keys(ICONS)[0];
+if (firstIcon) selectIcon(firstIcon);
