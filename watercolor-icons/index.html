@@ -56,6 +56,42 @@
         <feTurbulence id="wc-edge-noise" type="turbulence" baseFrequency="0.04" numOctaves="3" seed="2" result="edgeNoise"/>
         <feDisplacementMap id="wc-displace" in="texturedIcon" in2="edgeNoise" scale="0.3" xChannelSelector="R" yChannelSelector="G"/>
       </filter>
+
+      <!-- Metallic / Silver Coat of Arms — stamped metal with strong 3D relief -->
+      <filter id="metallic" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+        <!-- Step 1: Blur source alpha for lighting surface -->
+        <feGaussianBlur id="met-blur" in="SourceAlpha" stdDeviation="0.6" result="surfaceBlur"/>
+
+        <!-- Step 2: Specular highlight — bright metal sheen from top-left -->
+        <feSpecularLighting id="met-specular" in="surfaceBlur" surfaceScale="8" specularConstant="1.2" specularExponent="25" lighting-color="#ffffff" result="specular">
+          <fePointLight id="met-point-light" x="-3000" y="-6000" z="8000"/>
+        </feSpecularLighting>
+        <feComposite in="specular" in2="SourceAlpha" operator="in" result="specClipped"/>
+
+        <!-- Step 3: Diffuse lighting — overall form shading -->
+        <feDiffuseLighting id="met-diffuse" in="surfaceBlur" surfaceScale="6" diffuseConstant="0.9" lighting-color="#ffffff" result="diffuse">
+          <feDistantLight id="met-distant-light" azimuth="315" elevation="35"/>
+        </feDiffuseLighting>
+        <feComposite in="diffuse" in2="SourceAlpha" operator="in" result="diffClipped"/>
+
+        <!-- Step 4: Silver base fill -->
+        <feFlood id="met-base-color" flood-color="#C0C0C0" flood-opacity="1" result="silverFill"/>
+        <feComposite in="silverFill" in2="SourceAlpha" operator="in" result="silverShape"/>
+
+        <!-- Step 5: Drop shadow for depth -->
+        <feOffset in="SourceAlpha" dx="0.4" dy="0.6" result="shadowOff"/>
+        <feGaussianBlur id="met-shadow-blur" in="shadowOff" stdDeviation="0.8" result="shadowBlur"/>
+        <feFlood id="met-shadow-color" flood-color="#000000" flood-opacity="0.5" result="shadowFill"/>
+        <feComposite in="shadowFill" in2="shadowBlur" operator="in" result="dropShadow"/>
+
+        <!-- Step 6: Merge — shadow → silver base → diffuse shading → specular highlight -->
+        <feMerge>
+          <feMergeNode in="dropShadow"/>
+          <feMergeNode in="silverShape"/>
+          <feMergeNode in="diffClipped"/>
+          <feMergeNode in="specClipped"/>
+        </feMerge>
+      </filter>
     </defs>
   </svg>
 
@@ -81,6 +117,7 @@
           <button class="seg-btn" data-style="plain">Plain</button>
           <button class="seg-btn" data-style="embossed">Embossed</button>
           <button class="seg-btn active" data-style="watercolor">Watercolor</button>
+          <button class="seg-btn" data-style="metallic">Metallic</button>
         </div>
       </div>
 

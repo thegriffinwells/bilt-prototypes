@@ -128,6 +128,9 @@ function updatePreview() {
   } else if (activeStyle === "watercolor") {
     filterAttr = 'filter="url(#watercolor)"';
     updateWatercolorFilter();
+  } else if (activeStyle === "metallic") {
+    filterAttr = 'filter="url(#metallic)"';
+    updateMetallicFilter();
   }
 
   previewGroup.innerHTML = `<g ${filterAttr}>${pathsHtml}</g>`;
@@ -141,8 +144,11 @@ function updatePreview() {
 // ─── Viewer background ───
 function updateViewerBackground() {
   if (activeStyle === "embossed") {
-    // Embossed: set viewer bg to match the icon color for monochromatic effect
     viewer.style.backgroundColor = activeColor;
+    viewer.className = "viewer";
+  } else if (activeStyle === "metallic") {
+    // Metallic: silver/gray background
+    viewer.style.backgroundColor = "#B8B8BC";
     viewer.className = "viewer";
   } else {
     viewer.style.backgroundColor = "";
@@ -206,6 +212,32 @@ function updateWatercolorFilter() {
   }
 }
 
+function updateMetallicFilter() {
+  const intensity = intensitySlider.value / 100;
+  const glossiness = glossinessSlider.value / 100;
+
+  const metBlur = document.getElementById("met-blur");
+  const metSpecular = document.getElementById("met-specular");
+  const metDiffuse = document.getElementById("met-diffuse");
+  const metShadowBlur = document.getElementById("met-shadow-blur");
+  const metShadowColor = document.getElementById("met-shadow-color");
+
+  // Intensity controls relief depth
+  if (metBlur) metBlur.setAttribute("stdDeviation", 0.3 + intensity * 0.8);
+  if (metSpecular) {
+    metSpecular.setAttribute("surfaceScale", 4 + intensity * 10);
+    metSpecular.setAttribute("specularExponent", 15 + glossiness * 30);
+    metSpecular.setAttribute("specularConstant", 0.6 + glossiness * 1.0);
+  }
+  if (metDiffuse) {
+    metDiffuse.setAttribute("surfaceScale", 3 + intensity * 8);
+    metDiffuse.setAttribute("diffuseConstant", 0.6 + glossiness * 0.5);
+  }
+  // Shadow depth
+  if (metShadowBlur) metShadowBlur.setAttribute("stdDeviation", 0.4 + intensity * 0.8);
+  if (metShadowColor) metShadowColor.setAttribute("flood-opacity", 0.3 + intensity * 0.4);
+}
+
 // ─── Swatches ───
 function renderSwatches() {
   swatchesEl.innerHTML = "";
@@ -229,7 +261,8 @@ function updateControlsVisibility() {
     effectControls.style.display = "none";
   } else {
     effectControls.style.display = "";
-    glossinessGroup.style.display = activeStyle === "embossed" ? "" : "none";
+    const isMetalOrEmboss = activeStyle === "embossed" || activeStyle === "metallic";
+    glossinessGroup.style.display = isMetalOrEmboss ? "" : "none";
     softnessGroup.style.display = activeStyle === "watercolor" ? "" : "none";
     textureGroup.style.display = activeStyle === "watercolor" ? "" : "none";
     seedRow.style.display = activeStyle === "watercolor" ? "" : "none";
