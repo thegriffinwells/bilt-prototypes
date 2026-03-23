@@ -148,35 +148,21 @@ function updatePreview() {
     updateCrystalFilter();
   }
 
-  let leatherExtras = "";
+  let stitchHtml = "";
   if (activeStyle === "leather") {
     icon.paths.forEach(p => {
       if (p.fill && p.fill !== "none") {
-        const rules = (p.fillRule ? ` fill-rule="${p.fillRule}"` : '') +
-          (p.clipRule ? ` clip-rule="${p.clipRule}"` : '');
-
-        // Layer 1: Outer leather pad — wide border around the icon
-        leatherExtras += `<path d="${p.d}" fill="#7A5230" stroke="#7A5230" stroke-width="2.8" stroke-linejoin="round"${rules}/>`;
-
-        // Layer 2: Pad edge bevel — darker outer edge
-        leatherExtras += `<path d="${p.d}" fill="none" stroke="#3D200E" stroke-width="2.8" stroke-linejoin="round" opacity="0.25"${rules}/>`;
-
-        // Layer 3: Pad highlight — lighter inner area of the pad
-        leatherExtras += `<path d="${p.d}" fill="#9B6B3D" stroke="#9B6B3D" stroke-width="2.0" stroke-linejoin="round"${rules}/>`;
-
-        // Layer 4: Stitch shadow (slightly offset down-right)
-        leatherExtras += `<path d="${p.d}" fill="none" stroke="#2A1508" stroke-width="1.6" stroke-dasharray="0.45 0.35" stroke-linecap="round" stroke-linejoin="round" opacity="0.4" transform="translate(0.04,0.04)"${rules}/>`;
-
-        // Layer 5: Stitch thread — light tan color
-        leatherExtras += `<path d="${p.d}" fill="none" stroke="#D4A86A" stroke-width="1.6" stroke-dasharray="0.45 0.35" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"${rules}/>`;
-
-        // Layer 6: Stitch highlight — bright top of thread
-        leatherExtras += `<path d="${p.d}" fill="none" stroke="#E8C888" stroke-width="1.6" stroke-dasharray="0.45 0.35" stroke-linecap="round" stroke-linejoin="round" opacity="0.3" transform="translate(-0.02,-0.02)"${rules}/>`;
+        stitchHtml += `<path d="${p.d}" fill="none" stroke="#C4985A" stroke-width="0.25" stroke-dasharray="0.6 0.4" stroke-linecap="round" opacity="0.7"` +
+          (p.fillRule ? ` fill-rule="${p.fillRule}"` : '') +
+          (p.clipRule ? ` clip-rule="${p.clipRule}"` : '') + `/>`;
+        stitchHtml += `<path d="${p.d}" fill="none" stroke="#3D200E" stroke-width="0.2" stroke-dasharray="0.6 0.4" stroke-linecap="round" opacity="0.3" transform="translate(0.06,0.06)"` +
+          (p.fillRule ? ` fill-rule="${p.fillRule}"` : '') +
+          (p.clipRule ? ` clip-rule="${p.clipRule}"` : '') + `/>`;
       }
     });
   }
 
-  previewGroup.innerHTML = `${leatherExtras}<g ${filterAttr}>${pathsHtml}</g>`;
+  previewGroup.innerHTML = `<g ${filterAttr}>${pathsHtml}</g>${stitchHtml}`;
 
   // Update viewer background for embossed mode (monochromatic)
   updateViewerBackground();
