@@ -1,9 +1,9 @@
 // ─── State ───
 let activeIcon = null;
-let activeStyle = "plain";
+let activeStyle = "watercolor";
 let activeColor = "#0C0C0C";
 let activeSize = 256;
-let activeBg = "dark";
+let activeBg = "light";
 
 // ─── DOM refs ───
 const iconGrid = document.getElementById("icon-grid");
