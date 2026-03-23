@@ -109,57 +109,63 @@
         </feMerge>
       </filter>
 
-      <!-- Leather / Skeuomorphic — tooled leather with grain and warm lighting -->
-      <filter id="leather" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
-        <!-- Step 1: Leather grain texture -->
-        <feTurbulence id="lth-grain" type="fractalNoise" baseFrequency="1.8" numOctaves="6" seed="8" result="grain"/>
+      <!-- Leather / Skeuomorphic — rich tooled leather with grain, lighting, stitching -->
+      <filter id="leather" x="-12%" y="-12%" width="124%" height="124%" color-interpolation-filters="sRGB">
+        <!-- Step 1: Leather pore grain -->
+        <feTurbulence id="lth-grain" type="fractalNoise" baseFrequency="2.5" numOctaves="5" seed="8" result="grain"/>
         <feColorMatrix in="grain" type="saturate" values="0" result="grainGray"/>
+        <!-- Remap grain to subtle range -->
+        <feComponentTransfer in="grainGray" result="grainSubtle">
+          <feFuncR type="linear" slope="0.15" intercept="0.42"/>
+          <feFuncG type="linear" slope="0.15" intercept="0.42"/>
+          <feFuncB type="linear" slope="0.15" intercept="0.42"/>
+        </feComponentTransfer>
 
-        <!-- Step 2: Leather base color fill -->
-        <feFlood id="lth-base-color" flood-color="#7B4F2E" flood-opacity="1" result="leatherFill"/>
+        <!-- Step 2: Rich leather base color -->
+        <feFlood id="lth-base-color" flood-color="#8B5A2B" flood-opacity="1" result="leatherFill"/>
         <feComposite in="leatherFill" in2="SourceAlpha" operator="in" result="leatherShape"/>
 
-        <!-- Step 3: Clip grain to icon shape and blend with leather -->
-        <feComposite in="grainGray" in2="SourceAlpha" operator="in" result="grainClipped"/>
-        <feBlend in="leatherShape" in2="grainClipped" mode="overlay" result="texturedLeather"/>
+        <!-- Step 3: Blend grain into leather (soft-light for subtle pores) -->
+        <feComposite in="grainSubtle" in2="SourceAlpha" operator="in" result="grainClipped"/>
+        <feBlend in="leatherShape" in2="grainClipped" mode="soft-light" result="texturedLeather"/>
 
-        <!-- Step 4: Smooth surface map for 3D lighting -->
-        <feGaussianBlur id="lth-surface-blur" in="SourceAlpha" stdDeviation="0.8" result="surfaceBlur"/>
+        <!-- Step 4: Surface map for lighting -->
+        <feGaussianBlur id="lth-surface-blur" in="SourceAlpha" stdDeviation="0.9" result="surfaceBlur"/>
 
-        <!-- Step 5: Diffuse lighting — MULTIPLY blend to tint leather, not replace it -->
-        <feDiffuseLighting id="lth-diffuse" in="surfaceBlur" surfaceScale="3" diffuseConstant="1.0" lighting-color="#FFF0D6" result="diffuse">
-          <feDistantLight id="lth-distant-light" azimuth="315" elevation="45"/>
+        <!-- Step 5: Warm diffuse lighting — soft-light blend preserves leather color -->
+        <feDiffuseLighting id="lth-diffuse" in="surfaceBlur" surfaceScale="3.5" diffuseConstant="0.9" lighting-color="#FFEACC" result="diffuse">
+          <feDistantLight id="lth-distant-light" azimuth="315" elevation="50"/>
         </feDiffuseLighting>
         <feComposite in="diffuse" in2="SourceAlpha" operator="in" result="diffClipped"/>
-        <feBlend in="texturedLeather" in2="diffClipped" mode="multiply" result="litLeather"/>
+        <feBlend in="texturedLeather" in2="diffClipped" mode="soft-light" result="litLeather"/>
 
-        <!-- Step 6: Very subtle specular — leather is matte -->
-        <feSpecularLighting id="lth-specular" in="surfaceBlur" surfaceScale="2" specularConstant="0.15" specularExponent="12" lighting-color="#FFEEDD" result="specular">
+        <!-- Step 6: Matte specular — very subtle warm sheen -->
+        <feSpecularLighting id="lth-specular" in="surfaceBlur" surfaceScale="2" specularConstant="0.12" specularExponent="8" lighting-color="#FFE0B2" result="specular">
           <feDistantLight azimuth="315" elevation="55"/>
         </feSpecularLighting>
         <feComposite in="specular" in2="SourceAlpha" operator="in" result="specClipped"/>
 
         <!-- Step 7: Inner bevel — tooled edge highlight -->
-        <feOffset id="lth-bevel-light-off" in="SourceAlpha" dx="-0.15" dy="-0.15" result="bevelLightOff"/>
-        <feGaussianBlur id="lth-bevel-blur" in="bevelLightOff" stdDeviation="0.25" result="bevelBlur"/>
+        <feOffset id="lth-bevel-light-off" in="SourceAlpha" dx="-0.18" dy="-0.18" result="bevelLightOff"/>
+        <feGaussianBlur id="lth-bevel-blur" in="bevelLightOff" stdDeviation="0.2" result="bevelBlur"/>
         <feComposite in="bevelBlur" in2="SourceAlpha" operator="arithmetic" k1="0" k2="1" k3="-1" k4="0" result="bevelEdge"/>
-        <feFlood flood-color="#D4A870" flood-opacity="0.45" result="bevelColor"/>
+        <feFlood flood-color="#D4A870" flood-opacity="0.5" result="bevelColor"/>
         <feComposite in="bevelColor" in2="bevelEdge" operator="in" result="bevelHighlight"/>
 
         <!-- Step 8: Inner bevel shadow -->
-        <feOffset id="lth-bevel-dark-off" in="SourceAlpha" dx="0.15" dy="0.15" result="bevelDarkOff"/>
-        <feGaussianBlur in="bevelDarkOff" stdDeviation="0.25" result="bevelDarkBlur"/>
+        <feOffset id="lth-bevel-dark-off" in="SourceAlpha" dx="0.18" dy="0.18" result="bevelDarkOff"/>
+        <feGaussianBlur in="bevelDarkOff" stdDeviation="0.2" result="bevelDarkBlur"/>
         <feComposite in="bevelDarkBlur" in2="SourceAlpha" operator="arithmetic" k1="0" k2="1" k3="-1" k4="0" result="bevelDarkEdge"/>
-        <feFlood flood-color="#2A1508" flood-opacity="0.5" result="bevelDarkColor"/>
+        <feFlood flood-color="#2A1508" flood-opacity="0.55" result="bevelDarkColor"/>
         <feComposite in="bevelDarkColor" in2="bevelDarkEdge" operator="in" result="bevelShadow"/>
 
-        <!-- Step 9: Soft drop shadow -->
+        <!-- Step 9: Drop shadow -->
         <feOffset id="lth-shadow-offset" in="SourceAlpha" dx="0.25" dy="0.4" result="shadowOff"/>
         <feGaussianBlur id="lth-shadow-blur" in="shadowOff" stdDeviation="0.6" result="shadowBlur"/>
         <feFlood id="lth-shadow-color" flood-color="#1A0E05" flood-opacity="0.4" result="shadowFill"/>
         <feComposite in="shadowFill" in2="shadowBlur" operator="in" result="dropShadow"/>
 
-        <!-- Step 10: Merge — shadow → lit leather → bevel → specular -->
+        <!-- Step 10: Merge -->
         <feMerge>
           <feMergeNode in="dropShadow"/>
           <feMergeNode in="litLeather"/>

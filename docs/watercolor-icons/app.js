@@ -145,7 +145,23 @@ function updatePreview() {
     updateLeatherFilter();
   }
 
-  previewGroup.innerHTML = `<g ${filterAttr}>${pathsHtml}</g>`;
+  let stitchHtml = "";
+  if (activeStyle === "leather") {
+    // Add stitching — dashed stroke offset slightly inside the icon shape
+    icon.paths.forEach(p => {
+      if (p.fill && p.fill !== "none") {
+        stitchHtml += `<path d="${p.d}" fill="none" stroke="#C4985A" stroke-width="0.25" stroke-dasharray="0.6 0.4" stroke-linecap="round" opacity="0.7"` +
+          (p.fillRule ? ` fill-rule="${p.fillRule}"` : '') +
+          (p.clipRule ? ` clip-rule="${p.clipRule}"` : '') + `/>`;
+        // Stitch shadow (offset slightly)
+        stitchHtml += `<path d="${p.d}" fill="none" stroke="#3D200E" stroke-width="0.2" stroke-dasharray="0.6 0.4" stroke-linecap="round" opacity="0.3" transform="translate(0.06,0.06)"` +
+          (p.fillRule ? ` fill-rule="${p.fillRule}"` : '') +
+          (p.clipRule ? ` clip-rule="${p.clipRule}"` : '') + `/>`;
+      }
+    });
+  }
+
+  previewGroup.innerHTML = `<g ${filterAttr}>${pathsHtml}</g>${stitchHtml}`;
 
   // Update viewer background for embossed mode (monochromatic)
   updateViewerBackground();
