@@ -352,30 +352,32 @@ function bindEvents() {
   document.getElementById("export-png").addEventListener("click", exportPNG);
 }
 
-// ─── Export SVG ───
-function exportSVG() {
-  if (!activeIcon) return;
-
-  const clone = previewSvg.cloneNode(true);
-
+// ─── Export helpers ───
+function prepareExportClone(clone) {
+  // Inline the active filter
   if (activeStyle !== "plain") {
     const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-    const filterId = activeStyle === "embossed" ? "embossed" : "watercolor";
-    const filterEl = document.getElementById(filterId).cloneNode(true);
+    const filterEl = document.getElementById(activeStyle).cloneNode(true);
     defs.appendChild(filterEl);
     clone.insertBefore(defs, clone.firstChild);
   }
 
-  // For embossed, add background rect
-  if (activeStyle === "embossed") {
-    const icon = ICONS[activeIcon];
+  // Add background rect for styles that use a colored background
+  if (activeStyle === "embossed" || activeStyle === "metallic") {
+    const vb = clone.getAttribute("viewBox").split(" ");
     const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    rect.setAttribute("width", "24");
-    rect.setAttribute("height", "24");
-    rect.setAttribute("fill", activeColor);
+    rect.setAttribute("width", vb[2]);
+    rect.setAttribute("height", vb[3]);
+    rect.setAttribute("fill", activeStyle === "metallic" ? "#B8B8BC" : activeColor);
     clone.insertBefore(rect, clone.querySelector("g"));
   }
+}
 
+// ─── Export SVG ───
+function exportSVG() {
+  if (!activeIcon) return;
+  const clone = previewSvg.cloneNode(true);
+  prepareExportClone(clone);
   const serializer = new XMLSerializer();
   const svgStr = serializer.serializeToString(clone);
   const blob = new Blob([svgStr], { type: "image/svg+xml" });
@@ -393,23 +395,7 @@ function exportPNG() {
   const clone = previewSvg.cloneNode(true);
   clone.setAttribute("width", w);
   clone.setAttribute("height", h);
-
-  if (activeStyle !== "plain") {
-    const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-    const filterId = activeStyle === "embossed" ? "embossed" : "watercolor";
-    const filterEl = document.getElementById(filterId).cloneNode(true);
-    defs.appendChild(filterEl);
-    clone.insertBefore(defs, clone.firstChild);
-  }
-
-  if (activeStyle === "embossed") {
-    const icon = ICONS[activeIcon];
-    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    rect.setAttribute("width", "24");
-    rect.setAttribute("height", "24");
-    rect.setAttribute("fill", activeColor);
-    clone.insertBefore(rect, clone.querySelector("g"));
-  }
+  prepareExportClone(clone);
 
   const serializer = new XMLSerializer();
   const svgStr = serializer.serializeToString(clone);
