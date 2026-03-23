@@ -57,38 +57,54 @@
         <feDisplacementMap id="wc-displace" in="texturedIcon" in2="edgeNoise" scale="0.3" xChannelSelector="R" yChannelSelector="G"/>
       </filter>
 
-      <!-- Metallic / Silver Coat of Arms — stamped metal with strong 3D relief -->
-      <filter id="metallic" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
-        <!-- Step 1: Blur source alpha for lighting surface -->
-        <feGaussianBlur id="met-blur" in="SourceAlpha" stdDeviation="0.6" result="surfaceBlur"/>
+      <!-- Metallic / Polished Chrome — smooth 3D silver with soft gradients -->
+      <filter id="metallic" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="linearRGB">
+        <!-- Step 1: Smooth surface for lighting (higher blur = smoother) -->
+        <feGaussianBlur id="met-blur" in="SourceAlpha" stdDeviation="1.0" result="surfaceBlur"/>
 
-        <!-- Step 2: Specular highlight — bright metal sheen from top-left -->
-        <feSpecularLighting id="met-specular" in="surfaceBlur" surfaceScale="8" specularConstant="1.2" specularExponent="25" lighting-color="#ffffff" result="specular">
-          <fePointLight id="met-point-light" x="-3000" y="-6000" z="8000"/>
-        </feSpecularLighting>
-        <feComposite in="specular" in2="SourceAlpha" operator="in" result="specClipped"/>
-
-        <!-- Step 3: Diffuse lighting — overall form shading -->
-        <feDiffuseLighting id="met-diffuse" in="surfaceBlur" surfaceScale="6" diffuseConstant="0.9" lighting-color="#ffffff" result="diffuse">
-          <feDistantLight id="met-distant-light" azimuth="315" elevation="35"/>
+        <!-- Step 2: Diffuse lighting — smooth gradient across body -->
+        <feDiffuseLighting id="met-diffuse" in="surfaceBlur" surfaceScale="4" diffuseConstant="1.0" lighting-color="#ffffff" result="diffuse">
+          <feDistantLight id="met-distant-light" azimuth="315" elevation="50"/>
         </feDiffuseLighting>
         <feComposite in="diffuse" in2="SourceAlpha" operator="in" result="diffClipped"/>
 
+        <!-- Step 3: Specular highlight — tight sheen on edges -->
+        <feSpecularLighting id="met-specular" in="surfaceBlur" surfaceScale="3" specularConstant="0.8" specularExponent="35" lighting-color="#ffffff" result="specular">
+          <feDistantLight azimuth="315" elevation="60"/>
+        </feSpecularLighting>
+        <feComposite in="specular" in2="SourceAlpha" operator="in" result="specClipped"/>
+
         <!-- Step 4: Silver base fill -->
-        <feFlood id="met-base-color" flood-color="#C0C0C0" flood-opacity="1" result="silverFill"/>
+        <feFlood id="met-base-color" flood-color="#B0B0B4" flood-opacity="1" result="silverFill"/>
         <feComposite in="silverFill" in2="SourceAlpha" operator="in" result="silverShape"/>
 
-        <!-- Step 5: Drop shadow for depth -->
-        <feOffset in="SourceAlpha" dx="0.4" dy="0.6" result="shadowOff"/>
-        <feGaussianBlur id="met-shadow-blur" in="shadowOff" stdDeviation="0.8" result="shadowBlur"/>
-        <feFlood id="met-shadow-color" flood-color="#000000" flood-opacity="0.5" result="shadowFill"/>
+        <!-- Step 5: Soft drop shadow -->
+        <feOffset id="met-shadow-offset" in="SourceAlpha" dx="0.3" dy="0.5" result="shadowOff"/>
+        <feGaussianBlur id="met-shadow-blur" in="shadowOff" stdDeviation="0.7" result="shadowBlur"/>
+        <feFlood id="met-shadow-color" flood-color="#000000" flood-opacity="0.35" result="shadowFill"/>
         <feComposite in="shadowFill" in2="shadowBlur" operator="in" result="dropShadow"/>
 
-        <!-- Step 6: Merge — shadow → silver base → diffuse shading → specular highlight -->
+        <!-- Step 6: Bevel — inner highlight on top-left edge -->
+        <feOffset id="met-bevel-light-off" in="SourceAlpha" dx="-0.2" dy="-0.2" result="bevelLightOff"/>
+        <feGaussianBlur id="met-bevel-blur" in="bevelLightOff" stdDeviation="0.3" result="bevelBlur"/>
+        <feComposite in="bevelBlur" in2="SourceAlpha" operator="arithmetic" k1="0" k2="1" k3="-1" k4="0" result="bevelEdge"/>
+        <feFlood flood-color="#ffffff" flood-opacity="0.6" result="bevelColor"/>
+        <feComposite in="bevelColor" in2="bevelEdge" operator="in" result="bevelHighlight"/>
+
+        <!-- Step 7: Bevel — inner shadow on bottom-right edge -->
+        <feOffset id="met-bevel-dark-off" in="SourceAlpha" dx="0.2" dy="0.2" result="bevelDarkOff"/>
+        <feGaussianBlur in="bevelDarkOff" stdDeviation="0.3" result="bevelDarkBlur"/>
+        <feComposite in="bevelDarkBlur" in2="SourceAlpha" operator="arithmetic" k1="0" k2="1" k3="-1" k4="0" result="bevelDarkEdge"/>
+        <feFlood flood-color="#000000" flood-opacity="0.4" result="bevelDarkColor"/>
+        <feComposite in="bevelDarkColor" in2="bevelDarkEdge" operator="in" result="bevelShadow"/>
+
+        <!-- Step 8: Merge — shadow → silver → diffuse → bevel shadow → bevel highlight → specular -->
         <feMerge>
           <feMergeNode in="dropShadow"/>
           <feMergeNode in="silverShape"/>
           <feMergeNode in="diffClipped"/>
+          <feMergeNode in="bevelShadow"/>
+          <feMergeNode in="bevelHighlight"/>
           <feMergeNode in="specClipped"/>
         </feMerge>
       </filter>
@@ -148,6 +164,18 @@
         <div class="slider-group" id="texture-group" style="display:none">
           <label class="slider-label">Texture <span id="texture-val">30</span></label>
           <input type="range" id="texture" min="0" max="100" value="30" class="slider">
+        </div>
+        <div class="slider-group" id="relief-group" style="display:none">
+          <label class="slider-label">Relief <span id="relief-val">50</span></label>
+          <input type="range" id="relief" min="0" max="100" value="50" class="slider">
+        </div>
+        <div class="slider-group" id="bevel-group" style="display:none">
+          <label class="slider-label">Bevel <span id="bevel-val">50</span></label>
+          <input type="range" id="bevel" min="0" max="100" value="50" class="slider">
+        </div>
+        <div class="slider-group" id="shadow-group" style="display:none">
+          <label class="slider-label">Shadow <span id="shadow-val">40</span></label>
+          <input type="range" id="shadow" min="0" max="100" value="40" class="slider">
         </div>
         <div id="seed-row" style="display:none">
           <button id="randomize-btn" class="btn btn-small">Randomize</button>

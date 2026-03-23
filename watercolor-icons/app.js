@@ -28,6 +28,15 @@ const softnessGroup = document.getElementById("softness-group");
 const textureSlider = document.getElementById("texture");
 const textureVal = document.getElementById("texture-val");
 const textureGroup = document.getElementById("texture-group");
+const reliefSlider = document.getElementById("relief");
+const reliefVal = document.getElementById("relief-val");
+const reliefGroup = document.getElementById("relief-group");
+const bevelSlider = document.getElementById("bevel");
+const bevelVal = document.getElementById("bevel-val");
+const bevelGroup = document.getElementById("bevel-group");
+const shadowSlider = document.getElementById("shadow");
+const shadowVal = document.getElementById("shadow-val");
+const shadowGroup = document.getElementById("shadow-group");
 const seedRow = document.getElementById("seed-row");
 
 // ─── Bilt Color Library ───
@@ -215,27 +224,51 @@ function updateWatercolorFilter() {
 function updateMetallicFilter() {
   const intensity = intensitySlider.value / 100;
   const glossiness = glossinessSlider.value / 100;
+  const relief = reliefSlider.value / 100;
+  const bevel = bevelSlider.value / 100;
+  const shadow = shadowSlider.value / 100;
 
   const metBlur = document.getElementById("met-blur");
   const metSpecular = document.getElementById("met-specular");
   const metDiffuse = document.getElementById("met-diffuse");
+  const metDistantLight = document.getElementById("met-distant-light");
   const metShadowBlur = document.getElementById("met-shadow-blur");
   const metShadowColor = document.getElementById("met-shadow-color");
+  const metShadowOffset = document.getElementById("met-shadow-offset");
+  const metBevelLightOff = document.getElementById("met-bevel-light-off");
+  const metBevelDarkOff = document.getElementById("met-bevel-dark-off");
+  const metBevelBlur = document.getElementById("met-bevel-blur");
 
-  // Intensity controls relief depth
-  if (metBlur) metBlur.setAttribute("stdDeviation", 0.3 + intensity * 0.8);
-  if (metSpecular) {
-    metSpecular.setAttribute("surfaceScale", 4 + intensity * 10);
-    metSpecular.setAttribute("specularExponent", 15 + glossiness * 30);
-    metSpecular.setAttribute("specularConstant", 0.6 + glossiness * 1.0);
-  }
+  // Smoothness of surface (higher blur = smoother polish)
+  if (metBlur) metBlur.setAttribute("stdDeviation", 0.6 + intensity * 0.8);
+
+  // Diffuse — smooth body gradient; relief controls surface depth
   if (metDiffuse) {
-    metDiffuse.setAttribute("surfaceScale", 3 + intensity * 8);
-    metDiffuse.setAttribute("diffuseConstant", 0.6 + glossiness * 0.5);
+    metDiffuse.setAttribute("surfaceScale", 2 + relief * 6);
+    metDiffuse.setAttribute("diffuseConstant", 0.8 + intensity * 0.3);
   }
-  // Shadow depth
-  if (metShadowBlur) metShadowBlur.setAttribute("stdDeviation", 0.4 + intensity * 0.8);
-  if (metShadowColor) metShadowColor.setAttribute("flood-opacity", 0.3 + intensity * 0.4);
+  if (metDistantLight) {
+    metDistantLight.setAttribute("elevation", 40 + intensity * 20);
+  }
+
+  // Specular — glossiness controls shine tightness
+  if (metSpecular) {
+    metSpecular.setAttribute("surfaceScale", 1.5 + relief * 4);
+    metSpecular.setAttribute("specularExponent", 20 + glossiness * 40);
+    metSpecular.setAttribute("specularConstant", 0.4 + glossiness * 0.8);
+  }
+
+  // Bevel — inner edge highlights/shadows
+  const bevelOffset = 0.1 + bevel * 0.35;
+  const bevelBlurVal = 0.15 + bevel * 0.4;
+  if (metBevelLightOff) { metBevelLightOff.setAttribute("dx", -bevelOffset); metBevelLightOff.setAttribute("dy", -bevelOffset); }
+  if (metBevelDarkOff) { metBevelDarkOff.setAttribute("dx", bevelOffset); metBevelDarkOff.setAttribute("dy", bevelOffset); }
+  if (metBevelBlur) metBevelBlur.setAttribute("stdDeviation", bevelBlurVal);
+
+  // Drop shadow
+  if (metShadowOffset) { metShadowOffset.setAttribute("dx", 0.2 + shadow * 0.5); metShadowOffset.setAttribute("dy", 0.3 + shadow * 0.7); }
+  if (metShadowBlur) metShadowBlur.setAttribute("stdDeviation", 0.3 + shadow * 1.0);
+  if (metShadowColor) metShadowColor.setAttribute("flood-opacity", 0.15 + shadow * 0.4);
 }
 
 // ─── Swatches ───
@@ -261,11 +294,15 @@ function updateControlsVisibility() {
     effectControls.style.display = "none";
   } else {
     effectControls.style.display = "";
-    const isMetalOrEmboss = activeStyle === "embossed" || activeStyle === "metallic";
+    const isMetal = activeStyle === "metallic";
+    const isMetalOrEmboss = activeStyle === "embossed" || isMetal;
     glossinessGroup.style.display = isMetalOrEmboss ? "" : "none";
     softnessGroup.style.display = activeStyle === "watercolor" ? "" : "none";
     textureGroup.style.display = activeStyle === "watercolor" ? "" : "none";
-    seedRow.style.display = activeStyle === "watercolor" ? "" : "none";
+    reliefGroup.style.display = isMetal ? "" : "none";
+    bevelGroup.style.display = isMetal ? "" : "none";
+    shadowGroup.style.display = isMetal ? "" : "none";
+    seedRow.style.display = (activeStyle === "watercolor" || isMetal) ? "" : "none";
   }
 }
 
@@ -319,6 +356,18 @@ function bindEvents() {
     textureVal.textContent = e.target.value;
     updatePreview();
   });
+  reliefSlider.addEventListener("input", (e) => {
+    reliefVal.textContent = e.target.value;
+    updatePreview();
+  });
+  bevelSlider.addEventListener("input", (e) => {
+    bevelVal.textContent = e.target.value;
+    updatePreview();
+  });
+  shadowSlider.addEventListener("input", (e) => {
+    shadowVal.textContent = e.target.value;
+    updatePreview();
+  });
   sizeSlider.addEventListener("input", (e) => {
     activeSize = parseInt(e.target.value);
     sizeVal.textContent = activeSize;
@@ -327,22 +376,37 @@ function bindEvents() {
 
   // Randomize seed
   document.getElementById("randomize-btn").addEventListener("click", () => {
-    const seed = Math.floor(Math.random() * 1000);
-    const wcEdge = document.getElementById("wc-edge-noise");
-    const wcPaper = document.getElementById("wc-paper");
-    if (wcEdge) wcEdge.setAttribute("seed", seed);
-    if (wcPaper) wcPaper.setAttribute("seed", seed + 7);
+    // Randomize all visible sliders
+    const rand = (min, max) => Math.floor(Math.random() * (max - min) + min);
 
-    // Randomize slider values too
-    const randIntensity = Math.floor(Math.random() * 80 + 10);
-    const randSoftness = Math.floor(Math.random() * 80 + 10);
-    const randTexture = Math.floor(Math.random() * 80 + 10);
-    intensitySlider.value = randIntensity;
-    intensityVal.textContent = randIntensity;
-    softnessSlider.value = randSoftness;
-    softnessVal.textContent = randSoftness;
-    textureSlider.value = randTexture;
-    textureVal.textContent = randTexture;
+    intensitySlider.value = rand(10, 90);
+    intensityVal.textContent = intensitySlider.value;
+
+    if (activeStyle === "watercolor") {
+      const seed = Math.floor(Math.random() * 1000);
+      const wcEdge = document.getElementById("wc-edge-noise");
+      const wcPaper = document.getElementById("wc-paper");
+      if (wcEdge) wcEdge.setAttribute("seed", seed);
+      if (wcPaper) wcPaper.setAttribute("seed", seed + 7);
+      softnessSlider.value = rand(10, 90);
+      softnessVal.textContent = softnessSlider.value;
+      textureSlider.value = rand(10, 90);
+      textureVal.textContent = textureSlider.value;
+    }
+
+    if (activeStyle === "metallic" || activeStyle === "embossed") {
+      glossinessSlider.value = rand(20, 90);
+      glossinessVal.textContent = glossinessSlider.value;
+    }
+
+    if (activeStyle === "metallic") {
+      reliefSlider.value = rand(20, 80);
+      reliefVal.textContent = reliefSlider.value;
+      bevelSlider.value = rand(20, 80);
+      bevelVal.textContent = bevelSlider.value;
+      shadowSlider.value = rand(15, 70);
+      shadowVal.textContent = shadowSlider.value;
+    }
 
     updatePreview();
   });
