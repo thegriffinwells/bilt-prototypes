@@ -140,6 +140,9 @@ function updatePreview() {
   } else if (activeStyle === "metallic") {
     filterAttr = 'filter="url(#metallic)"';
     updateMetallicFilter();
+  } else if (activeStyle === "leather") {
+    filterAttr = 'filter="url(#leather)"';
+    updateLeatherFilter();
   }
 
   previewGroup.innerHTML = `<g ${filterAttr}>${pathsHtml}</g>`;
@@ -156,8 +159,10 @@ function updateViewerBackground() {
     viewer.style.backgroundColor = activeColor;
     viewer.className = "viewer";
   } else if (activeStyle === "metallic") {
-    // Metallic: silver/gray background
     viewer.style.backgroundColor = "#B8B8BC";
+    viewer.className = "viewer";
+  } else if (activeStyle === "leather") {
+    viewer.style.backgroundColor = "#D4B896";
     viewer.className = "viewer";
   } else {
     viewer.style.backgroundColor = "";
@@ -271,6 +276,56 @@ function updateMetallicFilter() {
   if (metShadowColor) metShadowColor.setAttribute("flood-opacity", 0.15 + shadow * 0.4);
 }
 
+function updateLeatherFilter() {
+  const intensity = intensitySlider.value / 100;
+  const glossiness = glossinessSlider.value / 100;
+  const relief = reliefSlider.value / 100;
+  const bevel = bevelSlider.value / 100;
+  const shadow = shadowSlider.value / 100;
+
+  const lthGrain = document.getElementById("lth-grain");
+  const lthSurfaceBlur = document.getElementById("lth-surface-blur");
+  const lthDiffuse = document.getElementById("lth-diffuse");
+  const lthSpecular = document.getElementById("lth-specular");
+  const lthBevelLightOff = document.getElementById("lth-bevel-light-off");
+  const lthBevelDarkOff = document.getElementById("lth-bevel-dark-off");
+  const lthBevelBlur = document.getElementById("lth-bevel-blur");
+  const lthShadowOffset = document.getElementById("lth-shadow-offset");
+  const lthShadowBlur = document.getElementById("lth-shadow-blur");
+  const lthShadowColor = document.getElementById("lth-shadow-color");
+
+  // Grain texture density
+  if (lthGrain) lthGrain.setAttribute("baseFrequency", 1.0 + intensity * 2.0);
+
+  // Surface smoothness for lighting
+  if (lthSurfaceBlur) lthSurfaceBlur.setAttribute("stdDeviation", 0.5 + (1 - intensity) * 0.6);
+
+  // Diffuse — tooled depth
+  if (lthDiffuse) {
+    lthDiffuse.setAttribute("surfaceScale", 1.5 + relief * 4);
+    lthDiffuse.setAttribute("diffuseConstant", 0.7 + glossiness * 0.4);
+  }
+
+  // Specular — leather sheen (subtle)
+  if (lthSpecular) {
+    lthSpecular.setAttribute("surfaceScale", 1 + relief * 3);
+    lthSpecular.setAttribute("specularConstant", 0.15 + glossiness * 0.35);
+    lthSpecular.setAttribute("specularExponent", 10 + glossiness * 20);
+  }
+
+  // Bevel
+  const bevelOffset = 0.08 + bevel * 0.25;
+  const bevelBlurVal = 0.12 + bevel * 0.35;
+  if (lthBevelLightOff) { lthBevelLightOff.setAttribute("dx", -bevelOffset); lthBevelLightOff.setAttribute("dy", -bevelOffset); }
+  if (lthBevelDarkOff) { lthBevelDarkOff.setAttribute("dx", bevelOffset); lthBevelDarkOff.setAttribute("dy", bevelOffset); }
+  if (lthBevelBlur) lthBevelBlur.setAttribute("stdDeviation", bevelBlurVal);
+
+  // Drop shadow
+  if (lthShadowOffset) { lthShadowOffset.setAttribute("dx", 0.15 + shadow * 0.4); lthShadowOffset.setAttribute("dy", 0.2 + shadow * 0.6); }
+  if (lthShadowBlur) lthShadowBlur.setAttribute("stdDeviation", 0.3 + shadow * 0.8);
+  if (lthShadowColor) lthShadowColor.setAttribute("flood-opacity", 0.15 + shadow * 0.4);
+}
+
 // ─── Swatches ───
 function renderSwatches() {
   swatchesEl.innerHTML = "";
@@ -294,15 +349,15 @@ function updateControlsVisibility() {
     effectControls.style.display = "none";
   } else {
     effectControls.style.display = "";
-    const isMetal = activeStyle === "metallic";
-    const isMetalOrEmboss = activeStyle === "embossed" || isMetal;
-    glossinessGroup.style.display = isMetalOrEmboss ? "" : "none";
+    const is3d = activeStyle === "metallic" || activeStyle === "leather";
+    const is3dOrEmboss = activeStyle === "embossed" || is3d;
+    glossinessGroup.style.display = is3dOrEmboss ? "" : "none";
     softnessGroup.style.display = activeStyle === "watercolor" ? "" : "none";
     textureGroup.style.display = activeStyle === "watercolor" ? "" : "none";
-    reliefGroup.style.display = isMetal ? "" : "none";
-    bevelGroup.style.display = isMetal ? "" : "none";
-    shadowGroup.style.display = isMetal ? "" : "none";
-    seedRow.style.display = (activeStyle === "watercolor" || isMetal) ? "" : "none";
+    reliefGroup.style.display = is3d ? "" : "none";
+    bevelGroup.style.display = is3d ? "" : "none";
+    shadowGroup.style.display = is3d ? "" : "none";
+    seedRow.style.display = (activeStyle !== "plain" && activeStyle !== "embossed") ? "" : "none";
   }
 }
 
@@ -382,24 +437,26 @@ function bindEvents() {
     intensitySlider.value = rand(10, 90);
     intensityVal.textContent = intensitySlider.value;
 
-    if (activeStyle === "watercolor") {
+    if (activeStyle === "watercolor" || activeStyle === "leather") {
       const seed = Math.floor(Math.random() * 1000);
       const wcEdge = document.getElementById("wc-edge-noise");
       const wcPaper = document.getElementById("wc-paper");
+      const lthGrain = document.getElementById("lth-grain");
       if (wcEdge) wcEdge.setAttribute("seed", seed);
       if (wcPaper) wcPaper.setAttribute("seed", seed + 7);
+      if (lthGrain) lthGrain.setAttribute("seed", seed + 3);
       softnessSlider.value = rand(10, 90);
       softnessVal.textContent = softnessSlider.value;
       textureSlider.value = rand(10, 90);
       textureVal.textContent = textureSlider.value;
     }
 
-    if (activeStyle === "metallic" || activeStyle === "embossed") {
+    if (activeStyle === "metallic" || activeStyle === "embossed" || activeStyle === "leather") {
       glossinessSlider.value = rand(20, 90);
       glossinessVal.textContent = glossinessSlider.value;
     }
 
-    if (activeStyle === "metallic") {
+    if (activeStyle === "metallic" || activeStyle === "leather") {
       reliefSlider.value = rand(20, 80);
       reliefVal.textContent = reliefSlider.value;
       bevelSlider.value = rand(20, 80);
@@ -427,12 +484,13 @@ function prepareExportClone(clone) {
   }
 
   // Add background rect for styles that use a colored background
-  if (activeStyle === "embossed" || activeStyle === "metallic") {
+  if (activeStyle === "embossed" || activeStyle === "metallic" || activeStyle === "leather") {
     const vb = clone.getAttribute("viewBox").split(" ");
     const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
     rect.setAttribute("width", vb[2]);
     rect.setAttribute("height", vb[3]);
-    rect.setAttribute("fill", activeStyle === "metallic" ? "#B8B8BC" : activeColor);
+    const bgColors = { metallic: "#B8B8BC", leather: "#D4B896", embossed: activeColor };
+    rect.setAttribute("fill", bgColors[activeStyle] || activeColor);
     clone.insertBefore(rect, clone.querySelector("g"));
   }
 }
