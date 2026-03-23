@@ -148,23 +148,31 @@ function updatePreview() {
     updateCrystalFilter();
   }
 
-  let stitchHtml = "";
+  let leatherExtras = "";
   if (activeStyle === "leather") {
-    // Add stitching — dashed stroke offset slightly inside the icon shape
+    // Flat leather border outside the stitching — thicker stroke acts as the leather pad
     icon.paths.forEach(p => {
       if (p.fill && p.fill !== "none") {
-        stitchHtml += `<path d="${p.d}" fill="none" stroke="#C4985A" stroke-width="0.25" stroke-dasharray="0.6 0.4" stroke-linecap="round" opacity="0.7"` +
-          (p.fillRule ? ` fill-rule="${p.fillRule}"` : '') +
-          (p.clipRule ? ` clip-rule="${p.clipRule}"` : '') + `/>`;
-        // Stitch shadow (offset slightly)
-        stitchHtml += `<path d="${p.d}" fill="none" stroke="#3D200E" stroke-width="0.2" stroke-dasharray="0.6 0.4" stroke-linecap="round" opacity="0.3" transform="translate(0.06,0.06)"` +
-          (p.fillRule ? ` fill-rule="${p.fillRule}"` : '') +
-          (p.clipRule ? ` clip-rule="${p.clipRule}"` : '') + `/>`;
+        const rules = (p.fillRule ? ` fill-rule="${p.fillRule}"` : '') +
+          (p.clipRule ? ` clip-rule="${p.clipRule}"` : '');
+        // Outer leather pad — flat color with thick stroke to extend beyond the icon
+        leatherExtras += `<path d="${p.d}" fill="#9B6B3D" stroke="#9B6B3D" stroke-width="1.8" stroke-linejoin="round" opacity="0.85"${rules}/>`;
+      }
+    });
+    // Stitching on top of the outer pad
+    icon.paths.forEach(p => {
+      if (p.fill && p.fill !== "none") {
+        const rules = (p.fillRule ? ` fill-rule="${p.fillRule}"` : '') +
+          (p.clipRule ? ` clip-rule="${p.clipRule}"` : '');
+        // Stitch shadow
+        leatherExtras += `<path d="${p.d}" fill="none" stroke="#3D200E" stroke-width="0.2" stroke-dasharray="0.6 0.4" stroke-linecap="round" opacity="0.3" transform="translate(0.06,0.06)"${rules}/>`;
+        // Stitch highlight
+        leatherExtras += `<path d="${p.d}" fill="none" stroke="#C4985A" stroke-width="0.25" stroke-dasharray="0.6 0.4" stroke-linecap="round" opacity="0.7"${rules}/>`;
       }
     });
   }
 
-  previewGroup.innerHTML = `<g ${filterAttr}>${pathsHtml}</g>${stitchHtml}`;
+  previewGroup.innerHTML = `${leatherExtras}<g ${filterAttr}>${pathsHtml}</g>`;
 
   // Update viewer background for embossed mode (monochromatic)
   updateViewerBackground();
