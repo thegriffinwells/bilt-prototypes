@@ -308,31 +308,28 @@ function updateCrystalFilter() {
   const cryFacets = document.getElementById("cry-facets");
   const crySpecular = document.getElementById("cry-specular");
   const crySpecular2 = document.getElementById("cry-specular2");
-  const cryDiffuse = document.getElementById("cry-diffuse");
   const cryBevelLight = document.getElementById("cry-bevel-light");
   const cryBevelBlur = document.getElementById("cry-bevel-blur");
   const cryShadowOffset = document.getElementById("cry-shadow-offset");
   const cryShadowBlur = document.getElementById("cry-shadow-blur");
   const cryShadowColor = document.getElementById("cry-shadow-color");
 
-  // Facet density
-  if (cryFacets) cryFacets.setAttribute("baseFrequency", 0.06 + intensity * 0.15);
+  // Facet density — intensity controls internal pattern complexity
+  if (cryFacets) cryFacets.setAttribute("baseFrequency", 0.05 + intensity * 0.1);
 
-  // Surface blur for lighting
-  if (cryBlur) cryBlur.setAttribute("stdDeviation", 0.3 + (1 - intensity) * 0.5);
+  // Surface smoothness for edge specular
+  if (cryBlur) cryBlur.setAttribute("stdDeviation", 0.3 + (1 - glossiness) * 0.4);
 
-  // Specular sparkle
+  // Primary specular — relief controls depth, glossiness controls sharpness
   if (crySpecular) {
-    crySpecular.setAttribute("surfaceScale", 2 + relief * 5);
-    crySpecular.setAttribute("specularExponent", 35 + glossiness * 40);
+    crySpecular.setAttribute("surfaceScale", 3 + relief * 5);
+    crySpecular.setAttribute("specularExponent", 40 + glossiness * 50);
     crySpecular.setAttribute("specularConstant", 0.8 + glossiness * 1.2);
   }
   if (crySpecular2) {
     crySpecular2.setAttribute("surfaceScale", 1.5 + relief * 3);
     crySpecular2.setAttribute("specularConstant", 0.3 + glossiness * 0.5);
   }
-
-  // (diffuse removed — crystal relies on facet pattern + specular)
 
   // Bevel — crisp faceted edges
   const bevelOffset = 0.06 + bevel * 0.18;
