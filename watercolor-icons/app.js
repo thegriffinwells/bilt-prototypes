@@ -541,6 +541,8 @@ function bindEvents() {
   // Export SVG
   document.getElementById("export-svg").addEventListener("click", exportSVG);
   document.getElementById("export-png").addEventListener("click", exportPNG);
+  document.getElementById("copy-svg").addEventListener("click", copySVG);
+  document.getElementById("copy-png").addEventListener("click", copyPNG);
 }
 
 // ─── Export helpers ───
@@ -605,6 +607,56 @@ function exportPNG() {
     }, "image/png");
   };
   img.src = dataUrl;
+}
+
+// ─── Copy SVG ───
+function copySVG() {
+  if (!activeIcon) return;
+  const clone = previewSvg.cloneNode(true);
+  prepareExportClone(clone);
+  const svgStr = new XMLSerializer().serializeToString(clone);
+  navigator.clipboard.writeText(svgStr).then(() => flashButton("copy-svg", "Copied!"));
+}
+
+// ─── Copy PNG ───
+function copyPNG() {
+  if (!activeIcon) return;
+  const scale = 2;
+  const w = activeSize * scale;
+  const h = activeSize * scale;
+  const clone = previewSvg.cloneNode(true);
+  clone.setAttribute("width", w);
+  clone.setAttribute("height", h);
+  prepareExportClone(clone);
+  const svgStr = new XMLSerializer().serializeToString(clone);
+  const dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgStr);
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, w, h);
+    canvas.toBlob(blob => {
+      if (blob) {
+        navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]).then(() => flashButton("copy-png", "Copied!"));
+      }
+    }, "image/png");
+  };
+  img.src = dataUrl;
+}
+
+function flashButton(id, text) {
+  const btn = document.getElementById(id);
+  const original = btn.textContent;
+  btn.textContent = text;
+  btn.style.background = "var(--accent)";
+  btn.style.color = "#fff";
+  setTimeout(() => {
+    btn.textContent = original;
+    btn.style.background = "";
+    btn.style.color = "";
+  }, 1500);
 }
 
 // ─── Download helper ───
