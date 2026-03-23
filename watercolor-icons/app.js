@@ -143,6 +143,9 @@ function updatePreview() {
   } else if (activeStyle === "leather") {
     filterAttr = 'filter="url(#leather)"';
     updateLeatherFilter();
+  } else if (activeStyle === "crystal") {
+    filterAttr = 'filter="url(#crystal)"';
+    updateCrystalFilter();
   }
 
   let stitchHtml = "";
@@ -179,6 +182,9 @@ function updateViewerBackground() {
     viewer.className = "viewer";
   } else if (activeStyle === "leather") {
     viewer.style.backgroundColor = "#D4B896";
+    viewer.className = "viewer";
+  } else if (activeStyle === "crystal") {
+    viewer.style.backgroundColor = "#E8EEF4";
     viewer.className = "viewer";
   } else {
     viewer.style.backgroundColor = "";
@@ -292,6 +298,57 @@ function updateMetallicFilter() {
   if (metShadowColor) metShadowColor.setAttribute("flood-opacity", 0.15 + shadow * 0.4);
 }
 
+function updateCrystalFilter() {
+  const intensity = intensitySlider.value / 100;
+  const glossiness = glossinessSlider.value / 100;
+  const relief = reliefSlider.value / 100;
+  const bevel = bevelSlider.value / 100;
+  const shadow = shadowSlider.value / 100;
+
+  const cryBlur = document.getElementById("cry-blur");
+  const crySpecular = document.getElementById("cry-specular");
+  const crySpecular2 = document.getElementById("cry-specular2");
+  const cryDiffuse = document.getElementById("cry-diffuse");
+  const cryBaseColor = document.getElementById("cry-base-color");
+  const cryBevelLight = document.getElementById("cry-bevel-light");
+  const cryBevelBlur = document.getElementById("cry-bevel-blur");
+  const cryShadowOffset = document.getElementById("cry-shadow-offset");
+  const cryShadowBlur = document.getElementById("cry-shadow-blur");
+  const cryShadowColor = document.getElementById("cry-shadow-color");
+
+  // Surface smoothness
+  if (cryBlur) cryBlur.setAttribute("stdDeviation", 0.5 + intensity * 0.7);
+
+  // Glass translucency
+  if (cryBaseColor) cryBaseColor.setAttribute("flood-opacity", 0.3 + (1 - intensity) * 0.3);
+
+  // Primary specular — glossiness controls sharpness
+  if (crySpecular) {
+    crySpecular.setAttribute("surfaceScale", 2 + relief * 5);
+    crySpecular.setAttribute("specularExponent", 30 + glossiness * 50);
+    crySpecular.setAttribute("specularConstant", 0.8 + glossiness * 1.2);
+  }
+  if (crySpecular2) {
+    crySpecular2.setAttribute("surfaceScale", 1.5 + relief * 3);
+    crySpecular2.setAttribute("specularConstant", 0.3 + glossiness * 0.5);
+  }
+
+  // Diffuse body
+  if (cryDiffuse) {
+    cryDiffuse.setAttribute("surfaceScale", 1.5 + relief * 4);
+  }
+
+  // Bevel
+  const bevelOffset = 0.08 + bevel * 0.2;
+  if (cryBevelLight) { cryBevelLight.setAttribute("dx", -bevelOffset); cryBevelLight.setAttribute("dy", -bevelOffset); }
+  if (cryBevelBlur) cryBevelBlur.setAttribute("stdDeviation", 0.08 + bevel * 0.2);
+
+  // Shadow
+  if (cryShadowOffset) { cryShadowOffset.setAttribute("dx", 0.2 + shadow * 0.4); cryShadowOffset.setAttribute("dy", 0.3 + shadow * 0.6); }
+  if (cryShadowBlur) cryShadowBlur.setAttribute("stdDeviation", 0.4 + shadow * 0.8);
+  if (cryShadowColor) cryShadowColor.setAttribute("flood-opacity", 0.15 + shadow * 0.3);
+}
+
 function updateLeatherFilter() {
   const intensity = intensitySlider.value / 100;
   const glossiness = glossinessSlider.value / 100;
@@ -365,7 +422,7 @@ function updateControlsVisibility() {
     effectControls.style.display = "none";
   } else {
     effectControls.style.display = "";
-    const is3d = activeStyle === "metallic" || activeStyle === "leather";
+    const is3d = activeStyle === "metallic" || activeStyle === "leather" || activeStyle === "crystal";
     const is3dOrEmboss = activeStyle === "embossed" || is3d;
     glossinessGroup.style.display = is3dOrEmboss ? "" : "none";
     softnessGroup.style.display = activeStyle === "watercolor" ? "" : "none";
@@ -467,12 +524,12 @@ function bindEvents() {
       textureVal.textContent = textureSlider.value;
     }
 
-    if (activeStyle === "metallic" || activeStyle === "embossed" || activeStyle === "leather") {
+    if (activeStyle === "metallic" || activeStyle === "embossed" || activeStyle === "leather" || activeStyle === "crystal") {
       glossinessSlider.value = rand(20, 90);
       glossinessVal.textContent = glossinessSlider.value;
     }
 
-    if (activeStyle === "metallic" || activeStyle === "leather") {
+    if (activeStyle === "metallic" || activeStyle === "leather" || activeStyle === "crystal") {
       reliefSlider.value = rand(20, 80);
       reliefVal.textContent = reliefSlider.value;
       bevelSlider.value = rand(20, 80);
@@ -500,12 +557,12 @@ function prepareExportClone(clone) {
   }
 
   // Add background rect for styles that use a colored background
-  if (activeStyle === "embossed" || activeStyle === "metallic" || activeStyle === "leather") {
+  if (activeStyle === "embossed" || activeStyle === "metallic" || activeStyle === "leather" || activeStyle === "crystal") {
     const vb = clone.getAttribute("viewBox").split(" ");
     const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
     rect.setAttribute("width", vb[2]);
     rect.setAttribute("height", vb[3]);
-    const bgColors = { metallic: "#B8B8BC", leather: "#D4B896", embossed: activeColor };
+    const bgColors = { metallic: "#B8B8BC", leather: "#D4B896", crystal: "#E8EEF4", embossed: activeColor };
     rect.setAttribute("fill", bgColors[activeStyle] || activeColor);
     clone.insertBefore(rect, clone.querySelector("g"));
   }
